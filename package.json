@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@discordjs/opus": "^0.6.0",
+    "@discordjs/voice": "^0.7.2",
+    "discord-music-player": "^8.3.0",
+    "discord.js": "^13.3.1",
+    "dotenv": "^10.0.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "opusscript": "^0.0.8",
+    "soundcloud-downloader": "^1.0.0",
+    "tweetnacl": "^1.0.3",
+    "yt-search": "^2.10.2",
+    "ytdl-core": "^4.9.1"
+  }
+}
