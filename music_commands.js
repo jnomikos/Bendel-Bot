@@ -159,7 +159,7 @@ async function play_music(client, guildQueue, message, args) {
             var opts = { query: args.join(" "), length: 5 }
             const r = await yts(opts);
             console.log(r.videos);
-            const videos = r.videos.slice(0, 6); // TODO: Make it only add 6 items to improve performance
+            const videos = r.videos; // TODO: Make it only add 6 items to improve performance
             const filter = i => { // Filter for message component collector for buttons. Put it up here so it can be used in multiple areas
                 console.log("BA", message.author.id === i.user.id, i !== undefined, i.customId.substr(0, 6) === 'choice');
 
@@ -171,99 +171,128 @@ async function play_music(client, guildQueue, message, args) {
 
             // If no videos were found from the search
             if (!videos.length) return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
+            var len = 0;
 
-            search_screen = new MessageEmbed()
-                .setColor('#c5e2ed')
-                .setTitle(`Showing results for: ${args.join(" ")}`)
-                //.setThumbnail('https://c.tenor.com/NjavXXAMRD8AAAAC/sound.gif')
-                .setDescription("Type the number of what you want to play:")
+            function search_screen_embed(len) {
+                search_screen = new MessageEmbed()
+                    .setColor('#c5e2ed')
+                    .setTitle(`Showing results for: ${args.join(" ")}`)
+                    //.setThumbnail('https://c.tenor.com/NjavXXAMRD8AAAAC/sound.gif')
+                    .setDescription("Type the number of what you want to play:")
 
-                .addFields(
-                    {
-                        name: videos[0] ? `:one: ${videos[0].title}` : `none`,
+                    .addFields(
+                        {
+                            name: videos[len] ? `:one: ${videos[len].title}` : `none`,
 
-                        value: videos[0] ? `Author: ${videos[0].author.name}, Duration: [${videos[0].timestamp}]` : `none`,
-
-
-                    },
-                    {
-                        name: videos[1] ? `:two: ${videos[1].title}` : `none`,
-
-                        value: videos[1] ? `Author: ${videos[1].author.name}, Duration: [${videos[1].timestamp}]` : `none`,
-
-                    },
-                    {
-                        name: videos[2] ? `:three: ${videos[2].title}` : `none`,
-
-                        value: videos[2] ? `Author: ${videos[2].author.name}, Duration: [${videos[2].timestamp}]` : `none`,
-
-                    },
-                    {
-                        name: videos[3] ? `:four: ${videos[3].title}` : `none`,
-
-                        value: videos[3] ? `Author: ${videos[3].author.name}, Duration: [${videos[3].timestamp}]` : `none`,
-
-                    },
-                    {
-                        name: videos[4] ? `:five: ${videos[4].title}` : `none`,
-
-                        value: videos[4] ? `Author: ${videos[4].author.name}, Duration: [${videos[4].timestamp}]` : `none`,
-
-                    },
-                )
-                .setTimestamp()
+                            value: videos[len] ? `Author: ${videos[len].author.name}, Duration: [${videos[0].timestamp}]` : `none`,
 
 
+                        },
+                        {
+                            name: videos[len + 1] ? `:two: ${videos[len + 1].title}` : `none`,
 
-            const row = new MessageActionRow()
-                .addComponents(
-                    new MessageButton()
-                        .setCustomId('choice_1')
-                        .setLabel('1')
-                        //.setEmoji('1️⃣')
-                        .setStyle('PRIMARY')
-                        .setDisabled(videos[0] === undefined)
-                )
+                            value: videos[len + 1] ? `Author: ${videos[len + 1].author.name}, Duration: [${videos[len + 1].timestamp}]` : `none`,
 
-                .addComponents(
-                    new MessageButton()
-                        .setCustomId('choice_2')
-                        .setLabel('2')
-                        // .setEmoji('2️⃣')
-                        .setStyle('PRIMARY')
-                        .setDisabled(videos[1] === undefined)
-                )
+                        },
+                        {
+                            name: videos[len + 2] ? `:three: ${videos[len + 2].title}` : `none`,
 
-                .addComponents(
-                    new MessageButton()
-                        .setCustomId('choice_3')
-                        .setLabel('3')
-                        // .setEmoji('3️⃣')
-                        .setStyle('PRIMARY')
-                        .setDisabled(videos[2] === undefined)
-                )
+                            value: videos[len + 2] ? `Author: ${videos[len + 2].author.name}, Duration: [${videos[len + 2].timestamp}]` : `none`,
 
-                .addComponents(
-                    new MessageButton()
-                        .setCustomId('choice_4')
-                        .setLabel('4')
-                        // .setEmoji('4️⃣')
-                        .setStyle('PRIMARY')
-                        .setDisabled(videos[3] === undefined)
-                )
+                        },
+                        {
+                            name: videos[len + 3] ? `:four: ${videos[len + 3].title}` : `none`,
 
-                .addComponents(
-                    new MessageButton()
-                        .setCustomId('choice_5')
-                        .setLabel('5')
-                        // .setEmoji('5️⃣')
-                        .setStyle('PRIMARY')
-                        .setDisabled(videos[4] === undefined)
-                )
+                            value: videos[len + 3] ? `Author: ${videos[len + 3].author.name}, Duration: [${videos[len + 3].timestamp}]` : `none`,
 
+                        },
+                        {
+                            name: videos[len + 4] ? `:five: ${videos[len + 4].title}` : `none`,
+
+                            value: videos[len + 4] ? `Author: ${videos[len + 4].author.name}, Duration: [${videos[len + 4].timestamp}]` : `none`,
+
+                        },
+                    )
+                    .setTimestamp()
+                return search_screen;
+            }
+
+
+            function row1(len) {
+                const r1 = new MessageActionRow()
+                    .addComponents(
+                        new MessageButton()
+                            .setCustomId('choice_1')
+                            .setLabel('1')
+                            //.setEmoji('1️⃣')
+                            .setStyle('PRIMARY')
+                            .setDisabled(videos[0] === undefined)
+                    )
+
+                    .addComponents(
+                        new MessageButton()
+                            .setCustomId('choice_2')
+                            .setLabel('2')
+                            // .setEmoji('2️⃣')
+                            .setStyle('PRIMARY')
+                            .setDisabled(videos[1] === undefined)
+                    )
+
+                    .addComponents(
+                        new MessageButton()
+                            .setCustomId('choice_3')
+                            .setLabel('3')
+                            // .setEmoji('3️⃣')
+                            .setStyle('PRIMARY')
+                            .setDisabled(videos[2] === undefined)
+                    )
+
+                    .addComponents(
+                        new MessageButton()
+                            .setCustomId('choice_4')
+                            .setLabel('4')
+                            // .setEmoji('4️⃣')
+                            .setStyle('PRIMARY')
+                            .setDisabled(videos[3] === undefined)
+                    )
+
+                    .addComponents(
+                        new MessageButton()
+                            .setCustomId('choice_5')
+                            .setLabel('5')
+                            // .setEmoji('5️⃣')
+                            .setStyle('PRIMARY')
+                            .setDisabled(videos[4] === undefined)
+                    )
+                return r1;
+            }
+            function row2(len) {
+                const r2 = new MessageActionRow()
+                    .addComponents(
+                        new MessageButton()
+                            .setCustomId('choice_back')
+                            //.setLabel('<')
+                            .setEmoji('⬅️')
+                            .setStyle('PRIMARY')
+                            .setDisabled(len === 0)
+                    )
+
+                    .addComponents(
+                        new MessageButton()
+                            .setCustomId('choice_forward')
+                            //.setLabel('2')
+                            .setEmoji('➡️')
+                            .setStyle('PRIMARY')
+                            .setDisabled(!videos[len + 5])
+                    )
+                return r2;
+            }
+            search = search_screen_embed(len);
+            const r1 = row1(len);
+            const r2 = row2(len);
             await message.reply({
-                embeds: [search_screen],
-                components: [row],
+                embeds: [search],
+                components: [r1, r2],
             })
             //message.member.id
 
@@ -271,49 +300,66 @@ async function play_music(client, guildQueue, message, args) {
 
 
 
-            coll.once('collect', async i => {
-                console.log("Buh");
+            coll.on('collect', async i => {
                 await i.deferUpdate();
-                i.editReply({ // loading reply
-                    content: "Hold on a second, adding the video...",
-                    embeds: [],
-                    components: []
-                });
-
-                var choice;
-                if (i.customId === 'choice_1') {
-                    choice = 0;
-                } else if (i.customId === 'choice_2') {
-                    choice = 1;
-                } else if (i.customId === 'choice_3') {
-                    choice = 2;
-                } else if (i.customId === 'choice_4') {
-                    choice = 3;
-                } else if (i.customId === 'choice_5') {
-                    choice = 4;
+                if (i.customId === 'choice_back') {
+                    len -= 5;
+                    i.editReply({ // loading reply
+                        content: "Hold on a second, adding the video...",
+                        embeds: [search_screen_embed(len)],
+                        components: [row1(len), row2(len)]
+                    });
+                } else if (i.customId === 'choice_forward') {
+                    len += 5;
+                    i.editReply({ // loading reply
+                        content: "Hold on a second, adding the video...",
+                        embeds: [search_screen_embed(len)],
+                        components: [row1(len), row2(len)]
+                    });
                 } else {
-                    return;
-                }
 
-                if (videos[choice] === undefined) {
-                    Promise.reject(new Error('fail')).then(console.error(error));
-                    console.error("Song chosen was undefined");
-                    return;
-                }
-
-                let song = await queue.play(videos[choice].url).catch(_ => {
-                    if (!guildQueue) {
-                        queue.stop();
-                        console.log("Guild queue stopped");
+                    var choice;
+                    if (i.customId === 'choice_1') {
+                        choice = 0;
+                    } else if (i.customId === 'choice_2') {
+                        choice = 1;
+                    } else if (i.customId === 'choice_3') {
+                        choice = 2;
+                    } else if (i.customId === 'choice_4') {
+                        choice = 3;
+                    } else if (i.customId === 'choice_5') {
+                        choice = 4;
+                    } else {
+                        return;
                     }
-                    Promise.reject(new Error('fail')).then(console.error(error));
-                    console.log("Catch");
-                });
-                resolve();
-                if (queue.songs.length === 1) {
-                    song_now_playing(client, message)
-                }
 
+                    i.editReply({ // loading reply
+                        content: "Hold on a second, adding the video...",
+                        embeds: [],
+                        components: []
+                    });
+
+                    if (videos[choice + len] === undefined) {
+                        Promise.reject(new Error('fail')).then(console.error(error));
+                        console.error("Song chosen was undefined");
+                        return;
+                    }
+
+                    let song = await queue.play(videos[choice + len].url).catch(_ => {
+                        if (!guildQueue) {
+                            queue.stop();
+                            console.log("Guild queue stopped");
+                        }
+                        Promise.reject(new Error('fail')).then(console.error(error));
+                        console.log("Catch");
+                    });
+                    resolve();
+                    if (queue.songs.length === 1) {
+                        song_now_playing(client, message)
+                    }
+
+                    coll.stop();
+                }
                 // i.editReply({
                 //     content: `Now playing: ${videos[choice].title}`,
                 //     embeds: [],
