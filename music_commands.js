@@ -67,6 +67,7 @@ async function leave_channel() {
     try {
         connection.destroy();
     } catch (error) {
+        console.log("Error in leaving channel")
         console.log(error);
     }
 }
@@ -94,6 +95,7 @@ async function play_music(client, guildQueue, message, args) {
     try {
         await queue.join(message.member.voice.channel);
     } catch (error) {
+        console.log("Error in queue join")
         console.log(error);
     }
 
@@ -125,7 +127,8 @@ async function play_music(client, guildQueue, message, args) {
 
 
                 if (isFirst && worked === true) {
-                    song_now_playing(client, message)
+                    song_playing_timeout(queue, client, message);
+                    //song_now_playing(client, message)
                 }
                 //if (isFirst && (song.songs !== undefined))
                 //    song_now_playing(client, message)
@@ -391,7 +394,6 @@ async function play_music(client, guildQueue, message, args) {
                         playing_now = new MessageEmbed()
                             .setColor('#c5e2ed')
                             .setTitle("Song added to queue: ")
-                            .setThumbnail('https://c.tenor.com/NjavXXAMRD8AAAAC/sound.gif')
                             .setDescription(`${song.name || song.title}`)
 
                             .setTimestamp()
@@ -424,7 +426,6 @@ var song_now_playing = async function (client, message) {
 
 
     const filter = i => { // Filter for message component collector
-        console.log(message.author.id === i.user.id, i !== undefined, i.customId.substr(0, 6) !== 'choice')
         return (message.author.id === i.user.id) && i !== undefined && i.customId.substr(0, 6) !== 'choice';
     }
 
@@ -554,19 +555,15 @@ var song_now_playing = async function (client, message) {
     }
 
 
+
     const msg = await message.channel.send({
         embeds: [playing_now],
         components: [r, r2]
     });
 
+
     const songChanged = async function songChanged(queue, newSong, oldSong) {
         console.log("SONG CHANGED!!!!");
-
-        msg.edit({
-            content: "The song was changed",
-            embeds: [],
-            components: []
-        })
 
         // Basically ensures that the buttons and embed shows up when the song is actually loaded to prevent errors
         song_playing_timeout(queue, client, message);
@@ -576,19 +573,31 @@ var song_now_playing = async function (client, message) {
         remove_event_listeners();
     }
 
+    const err = async function err(error, queue) {
+        console.log(`Error: ${error} in ${queue.guild.name} `);
+        console.log(error);
+        if (error === "Status code: 403") {
+            console.log("403 time");
+            cmd_collector.stop();
+            remove_event_listeners();
+        }
+    }
 
 
 
+
+    client.player.on('error', err);
     client.player.on('queueDestroyed', queueDestroyed);
     client.player.on('queueEnd', queueEnd);
     client.player.on('songChanged', songChanged);
 
-
+    //client.player.emit('error');
 
     function remove_event_listeners() {
         client.player.removeListener('queueEnd', queueEnd);
         client.player.removeListener('queueDestroyed', queueDestroyed);
         client.player.removeListener('songChanged', songChanged);
+        client.player.removeListener('error', err);
     }
 
 

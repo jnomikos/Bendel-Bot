@@ -201,7 +201,9 @@ client.on("messageCreate", async (message) => {
             try {
                 await queue.join(message.member.voice.channel);
             } catch (error) {
+                console.log("Error in queue join")
                 console.log(error);
+
             }
             //client.commands.get('join').execute(channel);
             //message.reply({
@@ -297,6 +299,7 @@ client.on("messageCreate", async (message) => {
                     .setFooter('Some footer text here', 'https://i.imgur.com/AfFp7pu.png');
 
             } catch (error) {
+                console.log("Error in pause")
                 console.log(error);
             }
             message.reply("The queue has been shuffled")
