@@ -553,21 +553,21 @@ var song_now_playing = async function (client, message) {
         cmd_collector.stop();
     }
 
+
+    const msg = await message.channel.send({
+        embeds: [playing_now],
+        components: [r, r2]
+    });
+
     const songChanged = async function songChanged(queue, newSong, oldSong) {
         console.log("SONG CHANGED!!!!");
-        //i.editReply({
-        //     content: "The song was skipped",
-        //     embeds: [],
-        //     components: []
-        //})
 
         msg.edit({
-            content: "The song was skipped",
+            content: "The song was changed",
             embeds: [],
             components: []
-        }).then(m => {
-            setTimeout(() => m.delete(), 2000);
-        });
+        })
+
         // Basically ensures that the buttons and embed shows up when the song is actually loaded to prevent errors
         song_playing_timeout(queue, client, message);
 
@@ -576,10 +576,7 @@ var song_now_playing = async function (client, message) {
         remove_event_listeners();
     }
 
-    const msg = await message.channel.send({
-        embeds: [playing_now],
-        components: [r, r2]
-    });
+
 
 
     client.player.on('queueDestroyed', queueDestroyed);
@@ -594,9 +591,6 @@ var song_now_playing = async function (client, message) {
         client.player.removeListener('songChanged', songChanged);
     }
 
-
-
-    var queue_listener_executed = false;
 
 
     cmd_collector.on('collect', async i => {
@@ -636,10 +630,20 @@ var song_now_playing = async function (client, message) {
                 }
                 try {
                     skippedSong = guildQueue.skip();
+                    msg.edit({
+                        content: "The song was skipped",
+                        embeds: [],
+                        components: []
+                    }).then(m => {
+                        setTimeout(() => m.delete(), 2000);
+                    })
+
+
+
                 } catch (error) {
-                    if (error.statusCode('403')) {
-                        console.log("Error, status code 403")
-                    }
+                    //if (error.statusCode('403')) {
+                    //    console.log("Error, status code 403")
+                    //}
                 }
             } else {
                 msg.delete();
@@ -657,12 +661,26 @@ var song_now_playing = async function (client, message) {
             }
 
         } else if (i.customId === 'loop') {
-            guildQueue.setRepeatMode(RepeatMode.SONG);
+            if (guildQueue.getRepeatMode() === 1) {
+                guildQueue.setRepeatMode(0);
+
+                message.channel.send("Loop mode has been stopped")
+
+            } else {
+                guildQueue.setRepeatMode(1);
+
+                message.channel.send("This song will now loop! (Press the button again to unloop)");
+            }
         } else if (i.customId === 'loop-songs') {
-            guildQueue.setRepeatMode(2);
+            if (guildQueue.getRepeatMode() === 2) {
+                guildQueue.setRepeatMode(0);
+                message.channel.send("Queue loop mode has been stopped")
+            } else {
+                guildQueue.setRepeatMode(2);
+                message.channel.send("The entire queue will now loop");
+            }
         } else if (i.customId === 'stop') {
             message.channel.send("Stopped the queue");
-
             remove_event_listeners();
             guildQueue.stop();
             cmd_collector.stop();

@@ -29,7 +29,7 @@ const client = new DiscordJS.Client({
 
 
 
-const { Player, Utils } = require("discord-music-player");
+const { Player, Utils, RepeatMode } = require("discord-music-player");
 const { severe_error } = require('./embeds');
 const { play_music, song_now_playing, song_playing_timeout } = require('./music_commands');
 
@@ -212,22 +212,7 @@ client.on("messageCreate", async (message) => {
         if (args.length < 1) { return; }
         //if (cooldown === true) { return; }
 
-        if (cooldown === true) {
-
-
-            const songAdd = function songAdd(song) {
-                client.player.removeListener('playlistAdd', playlistAdd);
-                cooldown = false;
-                play_music(client, guildQueue, message, args);
-            }
-            const playlistAdd = function playlistAdd(playlist) {
-                client.player.removeListener('songAdd', songAdd);
-                cooldown = false;
-                play_music(client, guildQueue, message, args);
-            }
-            client.player.once('songAdd', songAdd);
-            client.player.once('playlistAdd', playlistAdd);
-        } else {
+        if (cooldown === false) {
             cooldown = true;
 
             setTimeout(() => {
@@ -251,7 +236,6 @@ client.on("messageCreate", async (message) => {
         if (command === 'stop' || command === 'leave') {
             guildQueue.stop();
         } else if (command === 'skip') {
-
             if (guildQueue.paused === true) {
 
                 guildQueue.setPaused(false); // resumes the player if skipped because paused skip is weird
@@ -268,12 +252,24 @@ client.on("messageCreate", async (message) => {
                 })
 
             } else {
+                console.log("buh")
                 guildQueue.stop();
             }
         } else if (command === 'loop') {
-            guildQueue.setRepeatMode(RepeatMode.SONG); // or 1 instead of RepeatMode.SONG
+            if (guildQueue.getRepeatMode() === 1) {
+                guildQueue.setRepeatMode(0);
+            } else {
+                guildQueue.setRepeatMode(RepeatMode.SONG); // or 1 instead of RepeatMode.SONG
+            }
+
+
         } else if (command === 'queueloop' || command === 'qloop') {
-            guildQueue.setRepeatMode(RepeatMode.QUEUE); // or 2 instead of RepeatMode.QUEUE
+
+            if (guildQueue.getRepeatMode() === 2) {
+                guildQueue.setRepeatMode(0);
+            } else {
+                guildQueue.setRepeatMode(RepeatMode.QUEUE); // or 2 instead of RepeatMode.QUEUE
+            }
         } else if (command === 'volume') {
             guildQueue.setVolume(parseInt(args[0]));
         } else if (command === 'shuffle') {
