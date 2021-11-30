@@ -214,17 +214,17 @@ client.on("messageCreate", async (message) => {
         if (args.length < 1) { return; }
         //if (cooldown === true) { return; }
 
-        if (cooldown === false) {
-            cooldown = true;
+        //if (cooldown === false) {
+        //cooldown = true;
 
-            setTimeout(() => {
+        // setTimeout(() => {
 
-                cooldown = false;
+        //    cooldown = false;
 
-            }, 3000)
-
-            play_music(client, guildQueue, message, args);
-        }
+        // }, 3000)
+        command_queue_add(client, guildQueue, message, args);
+        //play_music(client, guildQueue, message, args);
+        //}
 
 
 
@@ -273,7 +273,12 @@ client.on("messageCreate", async (message) => {
                 guildQueue.setRepeatMode(RepeatMode.QUEUE); // or 2 instead of RepeatMode.QUEUE
             }
         } else if (command === 'volume') {
-            guildQueue.setVolume(parseInt(args[0]));
+            if (parseInt(args[0]) >= 0 && parseInt(args[0]) <= 100) {
+                guildQueue.setVolume(parseInt(args[0]));
+                message.reply("Volume has been set to " + parseInt(args[0]))
+            } else {
+                message.reply("Error: Volume must be a value between 0 and 100")
+            }
         } else if (command === 'shuffle') {
             message.reply("The queue has been shuffled")
             guildQueue.shuffle();
@@ -306,7 +311,12 @@ client.on("messageCreate", async (message) => {
         } else if (command === 'resume') {
             guildQueue.setPaused(false);
         } else if (command === 'remove') {
-            guildQueue.remove(parseInt(args[0]));
+
+            if (parseInt(args[0]) > 0 && guildQueue.songs[parseInt(args[0])]) {
+                guildQueue.remove(parseInt(args[0]));
+                guildQueue.songs.splice(parseInt(args[0]), 1);
+                message.reply(guildQueue.songs[parseInt(args[0])].name || guildQueue.songs[parseInt(args[0])].title)
+            }
         }
     }
 
@@ -380,7 +390,25 @@ client.on("interactionCreate", async (interaction) => {
 })
 
 
+var cmd_queue = [];
+function command_queue_add(client, guildQueue, message, args) {
+    var cmd = [client, guildQueue, message, args]
+    cmd_queue.push(cmd);
+    console.log("Length here", cmd_queue.length);
+    if (cmd_queue.length === 1) {
+        play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3]);
+    }
 
+}
+
+client.player.on('songLoaded', () => {
+    console.log("Song loaded")
+    cmd_queue.shift();
+    console.log(cmd_queue.length)
+    if (cmd_queue.length > 0) {
+        play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
+    }
+})
 
 
 

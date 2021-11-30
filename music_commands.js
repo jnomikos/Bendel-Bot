@@ -126,6 +126,9 @@ async function play_music(client, guildQueue, message, args) {
                 });
 
 
+                client.player.emit("songLoaded");
+
+
                 if (isFirst && worked === true) {
                     song_playing_timeout(queue, client, message);
                     //song_now_playing(client, message)
@@ -147,35 +150,37 @@ async function play_music(client, guildQueue, message, args) {
                     //song_chosen = false; // failure
                     return;
                 });
+                client.player.emit("songLoaded");
                 if (queue.songs.length === 1) {
                     song_now_playing(client, message)
                 }
+
             }
             resolve();
 
         } else {
             console.log("Searching..."); // TODO: tell user of it searching
-
+            const searchingMsg = await message.reply({
+                content: "Searching..."
+            })
             //const { videos } = await yts(args.join(" "));
 
             // Uses yt-search package to search youtube for search term
             var opts = { query: args.join(" "), length: 5 }
             const r = await yts(opts);
-            console.log(r.videos);
             const videos = r.videos; // TODO: Make it only add 6 items to improve performance
             const filter = i => { // Filter for message component collector for buttons. Put it up here so it can be used in multiple areas
-                console.log("BA", message.author.id === i.user.id, i !== undefined, i.customId.substr(0, 6) === 'choice');
-
-                console.log(i.customId.substr(0, 6))
                 return (message.author.id === i.user.id) && i !== undefined && i.customId.substr(0, 6) === 'choice';
             }
             const coll = message.channel.createMessageComponentCollector({ filter, time: 15 * 1000 });
-
-
+            if (!searchingMsg.deleted)
+                searchingMsg.delete();
             // If no videos were found from the search
             if (!videos.length) return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
-            var len = 0;
 
+
+            client.player.emit('newSearch');
+            var len = 0;
             function search_screen_embed(len) {
                 search_screen = new MessageEmbed()
                     .setColor('#c5e2ed')
@@ -185,38 +190,39 @@ async function play_music(client, guildQueue, message, args) {
 
                     .addFields(
                         {
-                            name: videos[len] ? `:one: ${videos[len].title}` : `none`,
+                            name: videos[len] ? `:one: ${videos[len].title}` : '\u200B',
 
-                            value: videos[len] ? `Author: ${videos[len].author.name}, Duration: [${videos[0].timestamp}]` : `none`,
+                            value: videos[len] ? `Author: ${videos[len].author.name}, Duration: [${videos[0].timestamp}]` : '\u200B',
 
-
-                        },
-                        {
-                            name: videos[len + 1] ? `:two: ${videos[len + 1].title}` : `none`,
-
-                            value: videos[len + 1] ? `Author: ${videos[len + 1].author.name}, Duration: [${videos[len + 1].timestamp}]` : `none`,
 
                         },
                         {
-                            name: videos[len + 2] ? `:three: ${videos[len + 2].title}` : `none`,
+                            name: videos[len + 1] ? `:two: ${videos[len + 1].title}` : '\u200B',
 
-                            value: videos[len + 2] ? `Author: ${videos[len + 2].author.name}, Duration: [${videos[len + 2].timestamp}]` : `none`,
-
-                        },
-                        {
-                            name: videos[len + 3] ? `:four: ${videos[len + 3].title}` : `none`,
-
-                            value: videos[len + 3] ? `Author: ${videos[len + 3].author.name}, Duration: [${videos[len + 3].timestamp}]` : `none`,
+                            value: videos[len + 1] ? `Author: ${videos[len + 1].author.name}, Duration: [${videos[len + 1].timestamp}]` : '\u200B',
 
                         },
                         {
-                            name: videos[len + 4] ? `:five: ${videos[len + 4].title}` : `none`,
+                            name: videos[len + 2] ? `:three: ${videos[len + 2].title}` : '\u200B',
 
-                            value: videos[len + 4] ? `Author: ${videos[len + 4].author.name}, Duration: [${videos[len + 4].timestamp}]` : `none`,
+                            value: videos[len + 2] ? `Author: ${videos[len + 2].author.name}, Duration: [${videos[len + 2].timestamp}]` : '\u200B',
+
+                        },
+                        {
+                            name: videos[len + 3] ? `:four: ${videos[len + 3].title}` : '\u200B',
+
+                            value: videos[len + 3] ? `Author: ${videos[len + 3].author.name}, Duration: [${videos[len + 3].timestamp}]` : '\u200B',
+
+                        },
+                        {
+                            name: videos[len + 4] ? `:five: ${videos[len + 4].title}` : '\u200B',
+
+                            value: videos[len + 4] ? `Author: ${videos[len + 4].author.name}, Duration: [${videos[len + 4].timestamp}]` : '\u200B',
 
                         },
                     )
-                    .setTimestamp()
+                    //.setTimestamp()
+                    .setFooter("Page " + ((len / 5) + 1).toString() + "/" + Math.ceil(videos.length / 5).toString());
                 return search_screen;
             }
 
@@ -229,7 +235,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('1')
                             //.setEmoji('1️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[0] === undefined)
+                            .setDisabled(videos[len] === undefined)
                     )
 
                     .addComponents(
@@ -238,7 +244,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('2')
                             // .setEmoji('2️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[1] === undefined)
+                            .setDisabled(videos[len + 1] === undefined)
                     )
 
                     .addComponents(
@@ -247,7 +253,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('3')
                             // .setEmoji('3️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[2] === undefined)
+                            .setDisabled(videos[len + 2] === undefined)
                     )
 
                     .addComponents(
@@ -256,7 +262,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('4')
                             // .setEmoji('4️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[3] === undefined)
+                            .setDisabled(videos[len + 3] === undefined)
                     )
 
                     .addComponents(
@@ -265,7 +271,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('5')
                             // .setEmoji('5️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[4] === undefined)
+                            .setDisabled(videos[len + 4] === undefined)
                     )
                 return r1;
             }
@@ -293,15 +299,30 @@ async function play_music(client, guildQueue, message, args) {
             search = search_screen_embed(len);
             const r1 = row1(len);
             const r2 = row2(len);
-            await message.reply({
+            const msgRef = await message.reply({
                 embeds: [search],
                 components: [r1, r2],
             })
+
+            setTimeout(() => {
+                coll.stop();
+                if (!msgRef.deleted)
+                    msgRef.delete();
+            }, 30 * 1000);
+
             //message.member.id
 
+            const newSearch = function newSearch() {
+                coll.stop();
+                if (!msgRef.deleted)
+                    msgRef.delete();
+                //msgRef.edit({
+                //    embeds: [],
+                //    components: [],
+                //})
+            }
 
-
-
+            client.player.once('newSearch', newSearch);
 
             coll.on('collect', async i => {
                 await i.deferUpdate();
@@ -348,34 +369,37 @@ async function play_music(client, guildQueue, message, args) {
                         return;
                     }
 
+                    var worked = true;
                     let song = await queue.play(videos[choice + len].url).catch(_ => {
-                        if (!guildQueue) {
-                            queue.stop();
-                            console.log("Guild queue stopped");
-                        }
-                        Promise.reject(new Error('fail')).then(console.error(error));
-                        console.log("Catch");
+
+                        i.editReply({ // loading reply
+                            content: "Video failed to add. Please try again",
+                            embeds: [],
+                            components: []
+                        });
+                        //if (!guildQueue) {
+                        //    queue.stop();
+                        //    console.log("Guild queue stopped");
+                        //}
+                        //Promise.reject(new Error('fail')).then(console.error(error));
+
+                        worked = false;
                     });
-                    resolve();
-                    if (queue.songs.length === 1) {
-                        song_now_playing(client, message)
+                    if (worked === true) {
+                        resolve();
+                        if (queue.songs.length === 1) {
+                            song_now_playing(client, message)
+                        }
                     }
+                    client.player.emit("songLoaded");
 
+                    client.player.removeListener('newSearch', newSearch);
                     coll.stop();
+
                 }
-                // i.editReply({
-                //     content: `Now playing: ${videos[choice].title}`,
-                //     embeds: [],
-                //    components: []
-                //})
-
-                //console.log("first", song_chosen);
             });
-
-            //console.log("second", song_chosen);
         }
     });
-    //console.log("third", song_chosen);
 
 
 
@@ -385,9 +409,11 @@ async function play_music(client, guildQueue, message, args) {
 
             result => {
                 console.log("Resolved");
-                client.player.once('songAdd', (queue, song) => {
+
+                const songAdd = function songAdd(queue, song) {
                     console.log("Song added to queue of ", queue.size)
-                    if (queue.size !== 0) {
+                    console.log(queue.songs.length);
+                    if (queue.songs.length > 0) {
                         //const song_name = ht.includes("soundcloud.com") ? song.title : song;
                         //console.log(song_name);
 
@@ -404,14 +430,17 @@ async function play_music(client, guildQueue, message, args) {
                             embeds: [playing_now]
                         })
                     }
-                })
+                }
+                client.player.once('songAdd', songAdd);
 
             },
 
             error => {
 
-                console.log("AAAAAAAAA WTF!")
-                console.log(error);
+                //console.log("AAAAAAAAA WTF!")
+                //console.log(error);
+
+                //if (error === 'fail') { return; }
 
             }
         );
@@ -431,21 +460,35 @@ var song_now_playing = async function (client, message) {
 
     guildQueue = await client.player.getQueue(message.guild.id);
     //const cmd_collector = message.channel.createMessageComponentCollector({ filter });
-    const cmd_collector = message.channel.createMessageComponentCollector({ filter, time: 10000 * 50 });
+    const cmd_collector = message.channel.createMessageComponentCollector({ filter, time: 1000 * 7200 }); // 2 hours
 
 
-    function duration_converter(time) { // converts mm:ss to decimal
-        if (time.split(':').length === 2) {
-            var minutes = parseInt(time.substr(0, 2));
-            var seconds = parseInt(time.substr(3, 5));
-            seconds *= (1 / 60);
-            return minutes + seconds;
-        } else if (time.split(':').length === 3) {
-            //var hours = parseInt(time.substr(0, 2));
-            //var minutes = parseInt(time.substr(3, 5)) * (1 / 60);
-            //var seconds = parseInt(time.substr(5, 7)) * (1 / 3600);
-            //return hours + minutes + seconds;
+    function duration_converter(time) { // converts decimal to hh:mm:ss
+        var hour = time / 3600000;
+        var hour_remainder = Math.abs(hour) - Math.floor(hour);
+        hour = Math.trunc(hour);
+
+        var minute = hour_remainder * 60;
+        var minute_remainder = Math.abs(minute) - Math.floor(minute);
+        minute = Math.trunc(minute);
+
+        var second = minute_remainder * 60;
+        second = Math.trunc(second);
+
+
+        if (String(second).length < 2) {
+            second = '0' + second;
         }
+
+        if (String(minute).length < 2) {
+            minute = '0' + minute;
+        }
+
+        if (String(hour).length < 2) {
+            hour = '0' + hour;
+        }
+
+        return (hour + ":" + minute + ":" + second);
     }
 
     //duration_converter(songDuration);
@@ -455,7 +498,9 @@ var song_now_playing = async function (client, message) {
     //console.log(current_song)
 
     let artist;
+    var duration = '\u200B';
     if (current_song.title) {
+        duration = duration_converter(current_song.duration);
         if (!current_song.publisher_metadata.artist) {
             artist = current_song.user.username;
         } else if (current_song.publisher_metadata.artist) {
@@ -465,19 +510,26 @@ var song_now_playing = async function (client, message) {
         }
     } else if (current_song.author) {
         artist = current_song.author;
+        duration = current_song.duration;
+        if (String(duration).length === 5) {
+            duration = "00:" + duration;
+        } else if (String(duration).length === 2) {
+            duration = "00:00:" + duration;
+        }
     } else {
         artist = "n/a"
     }
 
+
+    console.log(guildQueue.songs[0].duration)
     playing_now = new MessageEmbed()
         .setColor('#c5e2ed')
         .setTitle("Playing: ")
         //.setDescription(`${guildQueue.songs[0].name || current_song.title}`)
         .addFields(
             { name: guildQueue.songs[0].name || current_song.title, value: artist },
-            { name: '\u200B', value: '\u200B' },
             //{ name: 'Author', value: current_song.author || current_song.publisher_metadata.artist || "none", inline: true },
-            { name: 'Inline field title', value: 'Some value here', inline: true },
+            { name: "▬▬▬▬▬▬▬▬▬▬▬▬▬▬ [ 00:00:00/" + duration + "]", value: '\u200B' },
         )
         .setImage(`${current_song.thumbnail || current_song.artwork_url}`)
         .setTimestamp()
@@ -544,22 +596,27 @@ var song_now_playing = async function (client, message) {
     // })
 
 
-
-    const queueDestroyed = function queueDestroyed(queue) {
-        console.log('Destroyed queue');
-        cmd_collector.stop();
-    }
-    const queueEnd = function queueEnd(queue) {
-        console.log('Ended queue');
-        cmd_collector.stop();
-    }
-
-
-
     const msg = await message.channel.send({
         embeds: [playing_now],
         components: [r, r2]
     });
+
+    const queueDestroyed = function queueDestroyed(queue) {
+        cmd_collector.stop();
+        remove_event_listeners();
+    }
+    const queueEnd = function queueEnd(queue) {
+        msg.edit({
+            content: "The queue has ended.",
+            embeds: [],
+            components: []
+        })
+        cmd_collector.stop();
+        remove_event_listeners();
+    }
+
+
+
 
 
     const songChanged = async function songChanged(queue, newSong, oldSong) {
