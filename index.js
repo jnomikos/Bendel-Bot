@@ -2,8 +2,9 @@
 const DiscordJS = require('discord.js');
 const { Intents, MessageEmbed } = require('discord.js');
 const dotenv = require('dotenv');
+const mongoose = require('mongoose');
+//const prefix = require('./models/prefix')
 const prefix = '-'
-
 const { generateDependencyReport, VoiceConnection, joinVoiceChannel, entersState } = require('@discordjs/voice');
 // prints in consoles if all dependencies for a voice bot are met
 console.log(generateDependencyReport());
@@ -42,14 +43,45 @@ const player = new Player(client, {
 });
 client.player = player;
 
-client.commands = new DiscordJS.Collection();
-const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
+const files = fs.readdirSync("./events").filter(file => file.endsWith(".js"));
+// Loop over each file
+for (const file of files) {
+    // Split the file at its extension and get the event name
+    const eventName = file.split(".")[0];
+    // Require the file
+    const event = require(`./events/${file}`);
+    // super-secret recipe to call events with all their proper arguments *after* the `client` var.
+    // without going into too many details, this means each event will be called with the client argument,
+    // followed by its "normal" arguments, like message, member, etc etc.
+    // This line is awesome by the way. Just sayin'.
+    client.on(eventName, event.bind(null, client));
+}
 
-for (const file of commandFiles) {
+client.commands = new DiscordJS.Collection();
+client.aliases = new DiscordJS.Collection();
+// Read the Commands Directory, and filter the files that end with .js
+const commands = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
+// Loop over the Command files
+for (const file of commands) {
+    // Get the command name from splitting the file
+    const commandName = file.split(".")[0];
+    // Require the file
     const command = require(`./commands/${file}`);
 
+    console.log(`Attempting to load command ${commandName}`);
+    // Set the command to a collection
+    console.log(command.name, " ", command)
     client.commands.set(command.name, command);
+
+    if (command.aliases) { // alternative commands
+        command.aliases.forEach(alias => {
+            client.aliases.set(alias, command)
+        })
+    }
 }
+
+
+
 
 client.player
     // Emitted when channel was empty.
@@ -109,9 +141,10 @@ client.on('ready', () => {
     } else {
         commands = client.application?.commands;
     }
-
+    client.commands?.get('play');
     client.commands?.get('join');
     client.commands?.get('leave');
+
 
     commands?.create({
         name: 'add',
@@ -168,8 +201,14 @@ function getRandomInt(min, max) {
 
 connection = joinVoiceChannel;
 
-var cooldown = false;
+/*
 client.on("messageCreate", async (message) => {
+    //const data = await prefix.findOne({
+    //    GuildID: message.guild.id
+    // });
+
+    //const prefix = (data != undefined) ? data.prefix : '-';
+
 
     if (!message.content.startsWith(prefix) || message.author.bot) { return; }
     // Line that excludes Quentin some of the time
@@ -323,7 +362,7 @@ client.on("messageCreate", async (message) => {
 
 
 })
-
+*/
 
 client.on("interactionCreate", async (interaction) => {
     let msgTimeout = null;
@@ -390,28 +429,19 @@ client.on("interactionCreate", async (interaction) => {
 })
 
 
-var cmd_queue = [];
-function command_queue_add(client, guildQueue, message, args) {
-    var cmd = [client, guildQueue, message, args]
-    cmd_queue.push(cmd);
-    console.log("Length here", cmd_queue.length);
-    if (cmd_queue.length === 1) {
-        play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3]);
-    }
 
-}
 
-client.player.on('songLoaded', () => {
-    console.log("Song loaded")
-    cmd_queue.shift();
-    console.log(cmd_queue.length)
-    if (cmd_queue.length > 0) {
-        play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
-    }
-})
 
 
 
 module.exports = { client, player, myEmitter };
-
+mongoose.connect(process.env.MONGODB_SRV, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    //userFindAndModify: false
+}).then(() => {
+    console.log("Connected to the database!")
+}).catch((error) => {
+    console.log(error)
+});
 client.login(process.env.TOKEN);

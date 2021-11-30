@@ -1,30 +1,29 @@
-const { joinVoiceChannel, getVoiceConnection, VoiceConnectionStatus, AudioPlayerStatus, VoiceConnection, entersState } = require("@discordjs/voice");
-const { VoiceChannel } = require("discord.js");
-const { connect_to_channel } = require('../music_commands');
-
-async function play(message) {
-    // let guildQueue = client.player.getQueue(message.guild.id);
-    //let queue = client.player.createQueue(message.guild.id);
-    // await queue.join(message.member.voice.channel);
-    // let song = await queue.play(args.join(' ')).catch(_ => {
-    //      if (!guildQueue)
-    //          queue.stop();
-    //  });
-}
-
 module.exports = {
     name: 'join',
-    description: 'Joins voice channel',
+    aliases: ['j', 'enter'],
+    description: 'Joins the voice channel that you are in.',
+    async execute(client, message, args) {
 
-    async execute(channel) {
-        try {
-            const connection = await connect_to_channel(channel);
-            return connection;
-        } catch (error) {
-            console.log(error);
+        const channel = message.member?.voice.channel;
+        let guildQueue = client.player.getQueue(message.guild.id);
+        if (guildQueue) return;
+
+        if (channel == null) {
+            message.reply({
+                content: "You must be in a voice channel first!",
+            })
+            return;
+        } else {
+            let queue = client.player.createQueue(message.guild.id);
+            try {
+                await queue.join(message.member.voice.channel);
+                console.log("Joined the voice channel")
+            } catch (error) {
+                console.log("Error in queue join")
+                console.log(error);
+
+            }
         }
-        //channel = connect_to_channel(channel);
     }
+
 }
-
-

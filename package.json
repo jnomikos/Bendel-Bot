@@ -6,6 +6,7 @@
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
     "fluent-ffmpeg": "^2.1.2",
+    "mongoose": "^6.0.14",
     "opusscript": "^0.0.8",
     "soundcloud-downloader": "^1.0.0",
     "tweetnacl": "^1.0.3",

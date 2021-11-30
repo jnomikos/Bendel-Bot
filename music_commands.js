@@ -1,20 +1,12 @@
-const { joinVoiceChannel, VoiceConnectionStatus, entersState } = require("@discordjs/voice");
-
-const { MessageEmbed, MessageActionRow, MessageButton, Util } = require("discord.js");
+const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 const yts = require("yt-search");
-const { exampleEmbed, severe_error, loading_message } = require("./embeds");
-const scdl = require('soundcloud-downloader').default;
 
 
-const events = require('events');
-const eventEmitter = new events.EventEmitter();
-const DiscordJS = require("discord.js")
-
-const util = require('util');
 
 
-//let connection; // we want the same connection to be available to all commands
-var isConnected;
+
+
+
 
 async function song_playing_timeout(queue, client, message) {
     var timesRun = 0;
@@ -31,53 +23,7 @@ async function song_playing_timeout(queue, client, message) {
     }, 100);
 }
 
-
-async function connect_to_channel(channel) {
-    if (channel === null) { return; }
-    connection = joinVoiceChannel({
-        channelId: channel.id,
-        guildId: channel.guild.id,
-        adapterCreator: channel.guild.voiceAdapterCreator,
-    });
-
-    connection.on('stateChange', (oldState, newState) => {
-        console.log(`Connection transitioned from ${oldState.status} to ${newState.status}`);
-        if (newState.status === "ready") {
-            isConnected = true;
-        } else {
-            isConnected = false;
-        }
-    });
-
-    try {
-        console.log("Joined a voice channel");
-        await entersState(connection, VoiceConnectionStatus.Ready, 3e5);
-        return true;
-    } catch (error) {
-        console.log << "error";
-        connection.destroy();
-        throw error;
-    }
-}
-
-function is_connected() { return isConnected; }
-
-
-async function leave_channel() {
-    try {
-        connection.destroy();
-    } catch (error) {
-        console.log("Error in leaving channel")
-        console.log(error);
-    }
-}
-
 async function play_music(client, guildQueue, message, args) {
-
-    function loading_message() {
-        message.reply("Hold on a second, the music is loading...")
-    }
-
 
     const channel = message.member?.voice.channel;
     if (channel == null) {
@@ -763,8 +709,7 @@ var song_now_playing = async function (client, message) {
 
 
 }
-//cmd_collector.stop();
 
 
 
-module.exports = { connect_to_channel, leave_channel, is_connected, play_music, song_now_playing, song_playing_timeout };
+module.exports = { play_music, song_now_playing, song_playing_timeout };
