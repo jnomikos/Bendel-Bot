@@ -1,6 +1,6 @@
 //import DiscordJS, { Intents } from 'discord.js'
 const DiscordJS = require('discord.js');
-const { Intents, MessageEmbed } = require('discord.js');
+const { Intents, MessageEmbed, Collection } = require('discord.js');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 //const prefix = require('./models/prefix')
@@ -28,8 +28,7 @@ const client = new DiscordJS.Client({
     ]
 });
 
-
-
+client.commands = new Collection();
 const { Player, Utils, RepeatMode } = require("discord-music-player");
 const { severe_error } = require('./embeds');
 const { play_music, song_now_playing, song_playing_timeout } = require('./music_commands');
@@ -42,46 +41,6 @@ const player = new Player(client, {
     leaveOnEmpty: false, // This options are optional.
 });
 client.player = player;
-
-const files = fs.readdirSync("./events").filter(file => file.endsWith(".js"));
-// Loop over each file
-for (const file of files) {
-    // Split the file at its extension and get the event name
-    const eventName = file.split(".")[0];
-    // Require the file
-    const event = require(`./events/${file}`);
-    // super-secret recipe to call events with all their proper arguments *after* the `client` var.
-    // without going into too many details, this means each event will be called with the client argument,
-    // followed by its "normal" arguments, like message, member, etc etc.
-    // This line is awesome by the way. Just sayin'.
-    client.on(eventName, event.bind(null, client));
-}
-
-client.commands = new DiscordJS.Collection();
-client.aliases = new DiscordJS.Collection();
-// Read the Commands Directory, and filter the files that end with .js
-const commands = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
-// Loop over the Command files
-for (const file of commands) {
-    // Get the command name from splitting the file
-    const commandName = file.split(".")[0];
-    // Require the file
-    const command = require(`./commands/${file}`);
-
-    console.log(`Attempting to load command ${commandName}`);
-    // Set the command to a collection
-    console.log(command.name, " ", command)
-    client.commands.set(command.name, command);
-
-    if (command.aliases) { // alternative commands
-        command.aliases.forEach(alias => {
-            client.aliases.set(alias, command)
-        })
-    }
-}
-
-
-
 
 client.player
     // Emitted when channel was empty.
@@ -124,6 +83,12 @@ client.player
 
 client.on('ready', () => {
     console.log("The bot is ready");
+    let handler = require("./command-handler")
+    if (handler.default) {
+        handler = handler.default;
+    }
+
+    handler(client);
 
     // Two types of slash commands
     // guild

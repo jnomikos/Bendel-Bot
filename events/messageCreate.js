@@ -1,6 +1,7 @@
 
 
 module.exports = (client, message) => {
+    /*
     if (!message.content.startsWith(process.env.PREFIX) || message.author.bot) { return; }
 
     // Our standard argument/command name definition.
@@ -12,4 +13,5 @@ module.exports = (client, message) => {
     if (!cmd) return;
     // Run the command
     cmd.execute(client, message, args);
+    */
 };

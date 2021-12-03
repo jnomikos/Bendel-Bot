@@ -2,8 +2,8 @@ module.exports = {
     name: 'join',
     aliases: ['j', 'enter'],
     description: 'Joins the voice channel that you are in.',
+    directory: __dirname,
     async execute(client, message, args) {
-
         const channel = message.member?.voice.channel;
         let guildQueue = client.player.getQueue(message.guild.id);
         if (guildQueue) return;

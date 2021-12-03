@@ -3,10 +3,20 @@ const yts = require("yt-search");
 
 module.exports = {
     name: 'play',
+    arguments: '<song-url / search-query>',
     aliases: ['p', 'steal'],
     description: 'play a song',
+    directory: __dirname,
     async execute(client, message, args) {
         if (args.length < 1) { return; }
+
+        const channel = message.member?.voice.channel;
+        if (channel == null) {
+            message.reply({
+                content: "You must be in a voice channel first!",
+            })
+            return;
+        }
         let guildQueue = client.player.getQueue(message.guild.id);
         command_queue_add(client, guildQueue, message, args);
     }
@@ -18,7 +28,6 @@ module.exports = {
 
 var cmd_queue = [];
 function command_queue_add(client, guildQueue, message, args) {
-    console.log("HAHAHA")
     var cmd = [client, guildQueue, message, args]
     cmd_queue.push(cmd);
     if (cmd_queue.length === 1) {
@@ -40,6 +49,13 @@ function command_queue_add(client, guildQueue, message, args) {
 
 
 async function song_playing_timeout(queue, client, message) {
+
+    const channel = message.member?.voice.channel;
+
+    if (!channel) {
+        console.log('fail')
+        return;
+    }
     var timesRun = 0;
     var interval = setInterval(function () {
         timesRun++;
@@ -56,17 +72,6 @@ async function song_playing_timeout(queue, client, message) {
 
 async function play_music(client, guildQueue, message, args) {
 
-    const channel = message.member?.voice.channel;
-    if (channel == null) {
-        message.reply({
-            content: "You must be in a voice channel first!",
-        })
-        return;
-    }
-
-
-
-
     //client.commands.get('join').execute(channel); // joins the desired channel
     let queue = client.player.createQueue(message.guild.id);
     try {
@@ -79,7 +84,7 @@ async function play_music(client, guildQueue, message, args) {
     /*
     P's promise is that a song is chosen. If so, it will display song chosen message
     */
-    let song_chosen = new Promise(async function (resolve, reject) {
+    let song_chosen = new Promise(async function (resolve) {
         const ht = args.toString();
 
         if (ht.substr(0, 8) === "https://") { // is a link
@@ -119,7 +124,12 @@ async function play_music(client, guildQueue, message, args) {
                 //}
 
             } else { // Else; if the message sent is not a playlist
-                let song = await queue.play(args.join(' ')).catch(_ => {
+                let song = await queue.play(args.join(' ')).then(_ => {
+                    resolve();
+                    if (queue.songs.length === 1) {
+                        song_now_playing(client, message)
+                    }
+                }).catch(_ => {
                     if (!guildQueue) {
                         queue.stop();
                         console.log("Guild queue stopped");
@@ -128,12 +138,10 @@ async function play_music(client, guildQueue, message, args) {
                     return;
                 });
                 client.player.emit("songLoaded");
-                if (queue.songs.length === 1) {
-                    song_now_playing(client, message)
-                }
+
 
             }
-            resolve();
+
 
         } else {
             console.log("Searching..."); // TODO: tell user of it searching
@@ -410,15 +418,6 @@ async function play_music(client, guildQueue, message, args) {
                 }
                 client.player.once('songAdd', songAdd);
 
-            },
-
-            error => {
-
-                //console.log("AAAAAAAAA WTF!")
-                //console.log(error);
-
-                //if (error === 'fail') { return; }
-
             }
         );
     }
@@ -432,7 +431,7 @@ var song_now_playing = async function (client, message) {
 
 
     const filter = i => { // Filter for message component collector
-        return (message.author.id === i.user.id) && i !== undefined && i.customId.substr(0, 6) !== 'choice';
+        return (message.author.id === i.user.id) && i !== undefined && i.customId.substr(0, 2) === '1_';
     }
 
     guildQueue = await client.player.getQueue(message.guild.id);
@@ -515,7 +514,7 @@ var song_now_playing = async function (client, message) {
     const r = new MessageActionRow()
         .addComponents(
             new MessageButton()
-                .setCustomId('play-pause')
+                .setCustomId('1_play-pause')
                 .setEmoji(`⏯`)
                 .setStyle('SECONDARY')
 
@@ -524,7 +523,7 @@ var song_now_playing = async function (client, message) {
 
         .addComponents(
             new MessageButton()
-                .setCustomId('next')
+                .setCustomId('1_next')
                 .setEmoji('⏭')
                 .setStyle('SECONDARY')
 
@@ -532,7 +531,7 @@ var song_now_playing = async function (client, message) {
 
         .addComponents(
             new MessageButton()
-                .setCustomId('loop')
+                .setCustomId('1_loop')
                 .setEmoji(`🔁`)
                 .setStyle('SECONDARY')
 
@@ -540,7 +539,7 @@ var song_now_playing = async function (client, message) {
 
         .addComponents(
             new MessageButton()
-                .setCustomId('loop-songs')
+                .setCustomId('1_loop-songs')
                 .setEmoji('🔂')
                 .setStyle('SECONDARY')
 
@@ -549,7 +548,7 @@ var song_now_playing = async function (client, message) {
     const r2 = new MessageActionRow()
         .addComponents(
             new MessageButton()
-                .setCustomId('stop')
+                .setCustomId('1_stop')
                 .setEmoji('⏹')
                 .setStyle('SECONDARY')
 
@@ -557,7 +556,7 @@ var song_now_playing = async function (client, message) {
 
         .addComponents(
             new MessageButton()
-                .setCustomId('shuffle')
+                .setCustomId('1_shuffle')
                 .setEmoji('🔀')
                 .setStyle('SECONDARY')
 
@@ -637,6 +636,7 @@ var song_now_playing = async function (client, message) {
 
 
     cmd_collector.on('collect', async i => {
+        console.log("BUH!!!")
         if (i === undefined) { return; }
 
 
@@ -654,7 +654,7 @@ var song_now_playing = async function (client, message) {
         //}
 
 
-        if (i.customId === 'play-pause') {
+        if (i.customId === '1_play-pause') {
             //await i.deferUpdate();
             if (guildQueue.paused === true) {
                 guildQueue.setPaused(false);
@@ -664,7 +664,7 @@ var song_now_playing = async function (client, message) {
                 msg.edit("Paused the player");
             }
 
-        } else if (i.customId === 'next') {
+        } else if (i.customId === '1_next') {
             if (guildQueue.songs.length > 1) {
                 if (guildQueue.paused === true) {
 
@@ -703,7 +703,7 @@ var song_now_playing = async function (client, message) {
                 cmd_collector.stop();
             }
 
-        } else if (i.customId === 'loop') {
+        } else if (i.customId === '1_loop') {
             if (guildQueue.getRepeatMode() === 1) {
                 guildQueue.setRepeatMode(0);
 
@@ -714,7 +714,7 @@ var song_now_playing = async function (client, message) {
 
                 message.channel.send("This song will now loop! (Press the button again to unloop)");
             }
-        } else if (i.customId === 'loop-songs') {
+        } else if (i.customId === '1_loop-songs') {
             if (guildQueue.getRepeatMode() === 2) {
                 guildQueue.setRepeatMode(0);
                 message.channel.send("Queue loop mode has been stopped")
@@ -722,12 +722,12 @@ var song_now_playing = async function (client, message) {
                 guildQueue.setRepeatMode(2);
                 message.channel.send("The entire queue will now loop");
             }
-        } else if (i.customId === 'stop') {
+        } else if (i.customId === '1_stop') {
             message.channel.send("Stopped the queue");
             remove_event_listeners();
             guildQueue.stop();
             cmd_collector.stop();
-        } else if (i.customId === 'shuffle') {
+        } else if (i.customId === '1_shuffle') {
             message.channel.send("The queue has been shuffled");
             guildQueue.shuffle();
         } else {
