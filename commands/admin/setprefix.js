@@ -18,10 +18,15 @@ module.exports = {
                 message.reply("Error: Only administrators can use this command");
                 return;
             }
-
             console.log(args)
             if (args.toString().length > 2) {
-                message.reply("Error: Cannot set a prefix greater than 2 digits")
+                message.reply("\`Error: Cannot set a prefix greater than 2 digits\`")
+                return;
+            } else if (args.toString().length < 1) {
+                message.reply("\`You messed up\`");
+                return;
+            } else if (args.toString().includes('/')) {
+                message.reply("\`Error: Invalid characters in prefix set\`");
                 return;
             }
             // deletes all other entries of the same guild id
@@ -44,6 +49,16 @@ module.exports = {
         } catch (err) {
             //console.log(`Ran into an error while executing ${data.cmd.name}`)
             console.log(err)
+
+            const severe_error = new MessageEmbed()
+                .setColor('#cc0000')
+                .setTitle('Error')
+                .setDescription('An unexpected error has occured, please try again...')
+                .setImage('https://imgpile.com/images/U2Lhgk.png')
+
+            message.channel.send({
+                embeds: [severe_error]
+            })
             //return client.embed.send(message, {
             //    description: `An issue has occured while running the command. If this error keeps occuring please contact our development team.`,
             //   color: `RED`,

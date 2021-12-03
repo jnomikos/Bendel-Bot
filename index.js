@@ -31,7 +31,7 @@ const client = new DiscordJS.Client({
 client.commands = new Collection();
 const { Player, Utils, RepeatMode } = require("discord-music-player");
 const { severe_error } = require('./embeds');
-const { play_music, song_now_playing, song_playing_timeout } = require('./music_commands');
+
 
 const { EventEmitter } = require('stream');
 class MyEmitter extends EventEmitter { }

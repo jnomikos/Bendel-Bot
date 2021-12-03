@@ -636,7 +636,6 @@ var song_now_playing = async function (client, message) {
 
 
     cmd_collector.on('collect', async i => {
-        console.log("BUH!!!")
         if (i === undefined) { return; }
 
 
