@@ -17,7 +17,6 @@ module.exports = {
             let queue = client.player.createQueue(message.guild.id);
             try {
                 await queue.join(message.member.voice.channel);
-                console.log("Joined the voice channel")
             } catch (error) {
                 console.log("Error in queue join")
                 console.log(error);

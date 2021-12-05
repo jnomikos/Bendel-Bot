@@ -95,9 +95,22 @@ async function play_music(client, guildQueue, message, args) {
             if (ht.includes("list=") || ht.includes("playlist") || ht.includes("sets")) { // checks if link is a playlist
                 let isFirst = queue.songs.length === 0;
                 // direct integration from soundcloud
+                let load_msg = undefined;
+                if (ht.includes("open.spotify.com")) {
+                    load_msg = await message.reply(`\`Loading songs from spotify playlist. This may take a while...\``);
+                } else {
+                    load_msg = await message.reply(`\`Loading songs from the playlist. This may take a while...\``);
+                }
 
                 var worked = true;
-                let song = await queue.playlist(args.join(' ')).catch(error => {
+                let song = await queue.playlist(args.join(' ')).then(_ => {
+                    if (load_msg != undefined) {
+                        load_msg.delete();
+                        message.channel.send(`\`Playlist added to queue\``).then(m => {
+                            setTimeout(() => m.delete(), 2000);
+                        })
+                    }
+                }).catch(error => {
                     if (!guildQueue || !guildQueue.songs[0])
                         queue.stop();
                     //Promise.reject(error);
@@ -355,6 +368,7 @@ async function play_music(client, guildQueue, message, args) {
                     }
 
                     var worked = true;
+
                     let song = await queue.play(videos[choice + len].url).catch(_ => {
 
                         i.editReply({ // loading reply
@@ -416,7 +430,6 @@ async function play_music(client, guildQueue, message, args) {
                         })
                     }
                 }
-                client.player.once('songAdd', songAdd);
 
             }
         );
@@ -431,7 +444,7 @@ var song_now_playing = async function (client, message) {
 
 
     const filter = i => { // Filter for message component collector
-        return (message.author.id === i.user.id) && i !== undefined && i.customId.substr(0, 2) === '1_';
+        return i !== undefined && i.customId.substr(0, 2) === '1_';
     }
 
     guildQueue = await client.player.getQueue(message.guild.id);

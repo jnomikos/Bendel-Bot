@@ -74,7 +74,7 @@ module.exports = {
 
                 .addFields(
                     {
-                        name: guildQueue.songs[len] && len != 0 ? `${len}: ${guildQueue.songs[len].name}` : guildQueue.songs[len] ? `Playing:  ${guildQueue.songs[len].name}` : '\u200B',
+                        name: guildQueue.songs[len] && len != 0 ? `${len}: ${guildQueue.songs[len].name || guildQueue.songs[len].title}` : guildQueue.songs[len] ? `Playing:  ${guildQueue.songs[len].name || guildQueue.songs[len].title}` : '\u200B',
 
                         value: guildQueue.songs[len] ? `Author: ${guildQueue.songs[len].author || guildQueue.songs[len].user.username}, Duration: [${duration_converter(guildQueue.songs[len].duration)}]` : '\u200B',
 
@@ -82,7 +82,7 @@ module.exports = {
                     },
 
                     {
-                        name: guildQueue.songs[len + 1] ? `${len + 1}: ${guildQueue.songs[len + 1].name}` : '\u200B',
+                        name: guildQueue.songs[len + 1] ? `${len + 1}: ${guildQueue.songs[len + 1].name || guildQueue.songs[len + 1].title}` : '\u200B',
 
                         value: guildQueue.songs[len + 1] ? `Author: ${guildQueue.songs[len + 1].author || guildQueue.songs[len + 1].user.username}, Duration: [${duration_converter(guildQueue.songs[len + 1].duration)}]` : '\u200B',
 
@@ -90,7 +90,7 @@ module.exports = {
                     },
 
                     {
-                        name: guildQueue.songs[len + 2] ? `${len + 2}: ${guildQueue.songs[len + 2].name}` : '\u200B',
+                        name: guildQueue.songs[len + 2] ? `${len + 2}: ${guildQueue.songs[len + 2].name || guildQueue.songs[len + 2].title}` : '\u200B',
 
                         value: guildQueue.songs[len + 2] ? `Author: ${guildQueue.songs[len + 2].author || guildQueue.songs[len + 2].user.username}, Duration: [${duration_converter(guildQueue.songs[len + 2].duration)}]` : '\u200B',
 
@@ -98,7 +98,7 @@ module.exports = {
                     },
 
                     {
-                        name: guildQueue.songs[len + 3] ? `${len + 3}: ${guildQueue.songs[len + 3].name}` : '\u200B',
+                        name: guildQueue.songs[len + 3] ? `${len + 3}: ${guildQueue.songs[len + 3].name || guildQueue.songs[len + 3].title}` : '\u200B',
 
                         value: guildQueue.songs[len + 3] ? `Author: ${guildQueue.songs[len + 3].author || guildQueue.songs[len + 3].user.username}, Duration: [${duration_converter(guildQueue.songs[len + 3].duration)}]` : '\u200B',
 
@@ -106,7 +106,7 @@ module.exports = {
                     },
 
                     {
-                        name: guildQueue.songs[len + 4] ? `${len + 4}: ${guildQueue.songs[len + 4].name}` : '\u200B',
+                        name: guildQueue.songs[len + 4] ? `${len + 4}: ${guildQueue.songs[len + 4].name || guildQueue.songs[len + 4].title}` : '\u200B',
 
                         value: guildQueue.songs[len + 4] ? `Author: ${guildQueue.songs[len + 4].author || guildQueue.songs[len + 4].user.username}, Duration: [${duration_converter(guildQueue.songs[len + 4].duration)}]` : '\u200B',
 

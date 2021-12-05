@@ -38,7 +38,10 @@ class MyEmitter extends EventEmitter { }
 const myEmitter = new MyEmitter();
 
 const player = new Player(client, {
-    leaveOnEmpty: false, // This options are optional.
+    leaveOnEmpty: true, // This options are optional.
+    leaveOnEnd: true,
+    leaveOnStop: true,
+    timeout: 300 * 1000,
 });
 client.player = player;
 
