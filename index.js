@@ -13,7 +13,6 @@ const fs = require('fs'); // for using other js files
 
 
 var quentin_id = 290956491102486528;
-//const connection = getVoiceConnection(myVoiceChannel.guild.id);
 
 
 dotenv.config();
