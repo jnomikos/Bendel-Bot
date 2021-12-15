@@ -41,7 +41,7 @@ const player = new Player(client, {
     leaveOnEmpty: true, // This options are optional.
     leaveOnEnd: true,
     leaveOnStop: true,
-    timeout: 300 * 1000,
+    //timeout: 300 * 1000
 });
 client.player = player;
 
@@ -92,6 +92,8 @@ client.on('ready', () => {
     }
 
     handler(client);
+
+    client.user.setActivity(`Bendel Music | -help`, { type: "LISTENING" });
 
     // Two types of slash commands
     // guild

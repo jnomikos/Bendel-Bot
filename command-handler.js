@@ -66,7 +66,7 @@ module.exports = async (client) => {
                 p = guildData.prefix;
             }
 
-            client.user.setActivity(`Bendel Music | ${p}help`, { type: "LISTENING" });
+            //client.user.setActivity(`Bendel Music | ${p}help`, { type: "LISTENING" });
         } catch (err) {
             console.log(err);
         }

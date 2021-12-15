@@ -42,7 +42,7 @@ module.exports = {
             // await data.guild.save();
             //message.guild.prefix = prefix.toLowerCase();
 
-            client.user.setActivity(`Bendel Music | ${args}help`, { type: "LISTENING" });
+            //client.user.setActivity(`Bendel Music | ${args}help`, { type: "LISTENING" });
             return message.channel.send(`Prefix has been updated to \`${args}\``);
 
 

@@ -73,7 +73,15 @@ async function song_playing_timeout(queue, client, message) {
 async function play_music(client, guildQueue, message, args) {
 
     //client.commands.get('join').execute(channel); // joins the desired channel
-    let queue = client.player.createQueue(message.guild.id);
+    let queue;
+    // if (!guildQueue) {
+    queue = client.player.createQueue(message.guild.id);
+    //} else {
+    //  queue = client.player.getQueue(message.guild.id);
+    //}
+
+
+
     try {
         await queue.join(message.member.voice.channel);
     } catch (error) {
@@ -140,7 +148,7 @@ async function play_music(client, guildQueue, message, args) {
                 let song = await queue.play(args.join(' ')).then(_ => {
                     resolve();
                     if (queue.songs.length === 1) {
-                        song_now_playing(client, message)
+                        song_playing_timeout(queue, client, message);
                     }
                 }).catch(_ => {
                     if (!guildQueue) {
@@ -387,7 +395,7 @@ async function play_music(client, guildQueue, message, args) {
                     if (worked === true) {
                         resolve();
                         if (queue.songs.length === 1) {
-                            song_now_playing(client, message)
+                            song_playing_timeout(queue, client, message)
                         }
                     }
                     client.player.emit("songLoaded");
@@ -430,6 +438,8 @@ async function play_music(client, guildQueue, message, args) {
                         })
                     }
                 }
+
+                client.player.once("songAdd", songAdd);
 
             }
         );
@@ -624,6 +634,7 @@ var song_now_playing = async function (client, message) {
         console.log(error);
         if (error === "Status code: 403") {
             console.log("403 time");
+            msg.delete();
             cmd_collector.stop();
             remove_event_listeners();
         }

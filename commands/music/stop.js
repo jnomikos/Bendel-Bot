@@ -1,6 +1,6 @@
 module.exports = {
     name: 'stop',
-    aliases: ['leave', 'exit', 'l', 's'],
+    aliases: ['s', 'exit', 'leave', 'l'],
     description: 'Stops the queue (if there is one) and the voice channel',
     directory: __dirname,
     async execute(client, message, args) {
