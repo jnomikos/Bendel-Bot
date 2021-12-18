@@ -3,7 +3,7 @@ const { Permissions } = require('discord.js');
 
 module.exports = {
     name: 'toggle_fire',
-    description: 'Makes Bendel respond to messages with fire emojis randomly sometimes',
+    description: 'Makes Bendel react to messages with a fire emoji randomly sometimes',
     directory: __dirname,
     async execute(client, message, args) {
         if (!message.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {

@@ -8,6 +8,11 @@ module.exports = {
         .setDescription('Joins the voice channel')
     ,
     directory: __dirname,
+    async interact(client, interaction) {
+        this.execute(client, interaction)
+    },
+
+
     async execute(client, message, args) {
         //let isInteraction = false;
         // if (message.user) {

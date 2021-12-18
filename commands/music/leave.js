@@ -3,11 +3,16 @@ module.exports = {
     name: 'leave',
     aliases: ['stop', 'exit', 'leave', 'l'],
     description: 'Stops the queue and leaves the voice channel',
+    directory: __dirname,
     data: new SlashCommandBuilder()
         .setName('leave')
         .setDescription('Stops the queue and leaves the voice channel')
     ,
-    directory: __dirname,
+
+    async interact(client, interaction) {
+        this.execute(client, interaction)
+    },
+
     async execute(client, message, args) {
         const channel = message.member?.voice.channel;
         if (channel === null) {

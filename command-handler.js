@@ -77,7 +77,7 @@ module.exports = async (client) => {
             }
         }
         try {
-            command.execute(client, interaction, options);
+            command.interact(client, interaction, options);
 
         } catch (error) {
             //     console.log(error);
@@ -108,9 +108,10 @@ module.exports = async (client) => {
                 p = guildData.prefix;
             }
             if (guildData.fire_toggle === true) {
-                let fire_chance = Math.floor(Math.random() * 250);
+                let fire_chance = Math.floor(Math.random() * 50);
+                console.log(fire_chance)
                 if (fire_chance === 5) {
-                    message.channel.send("🔥🔥🔥");
+                    message.react('🔥');
                 }
             }
 
