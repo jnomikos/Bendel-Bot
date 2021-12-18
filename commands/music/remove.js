@@ -3,6 +3,7 @@ module.exports = {
     arguments: '<song-position>',
     aliases: ['rm'],
     description: 'Removes a song from the queue',
+    slash_command: true,
     directory: __dirname,
     async execute(client, message, args) {
         let guildQueue = client.player.getQueue(message.guild.id);

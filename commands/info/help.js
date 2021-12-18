@@ -2,12 +2,17 @@ const { Client, Message, MessageEmbed, MessageActionRow, MessageSelectMenu } = r
 const fs = require('fs')
 const loadCommands = require('../../command-handler');
 
+const { SlashCommandBuilder } = require('@discordjs/builders')
 
 
 module.exports = {
     name: 'help',
     description: 'Get info on all commands available',
     directory: __dirname,
+    data: new SlashCommandBuilder()
+        .setName('help')
+        .setDescription('Shows a list of commands available')
+    ,
     async execute(client, message, args) {
 
         const directories = [

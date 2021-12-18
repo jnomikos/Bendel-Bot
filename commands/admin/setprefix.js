@@ -1,24 +1,41 @@
 
 const guildSchema = require('../../database/schema/guild')
 const { Permissions } = require('discord.js');
+const { SlashCommandBuilder } = require('@discordjs/builders')
 module.exports = {
     name: "setprefix",
     description: "Sets the prefix for your server",
     aliases: ["prefix"],
+    permission: ['ADMINISTRATOR'],
+    data: new SlashCommandBuilder()
+        .setName('setprefix')
+        .setDescription('Sets the prefix for your server')
+        .addStringOption((option) => option
+            .setName('prefix')
+            .setDescription('Prefix to set')
+            .setRequired(true)
+        )
+    ,
+
     directory: __dirname,
 
     // Execute contains content for the command
     async execute(client, message, args, data) {
         try {
-
+            let isInteraction = false;
+            if (message.user) {
+                isInteraction = true;
+                args = args.get('prefix').value;
+            }
             //if (!args[0]) {
             //    return client.embed.usage(message, data);
             // }
+
             if (!message.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
                 message.reply("Error: Only administrators can use this command");
                 return;
             }
-            console.log(args)
+
             if (args.toString().length > 2) {
                 message.reply("\`Error: Cannot set a prefix greater than 2 digits\`")
                 return;
@@ -43,7 +60,7 @@ module.exports = {
             //message.guild.prefix = prefix.toLowerCase();
 
             //client.user.setActivity(`Bendel Music | ${args}help`, { type: "LISTENING" });
-            return message.channel.send(`Prefix has been updated to \`${args}\``);
+            return message.reply(`Prefix has been updated to \`${args}\``);
 
 
         } catch (err) {

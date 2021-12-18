@@ -100,7 +100,7 @@ client.on('ready', () => {
 
     // global cmds take 1 hr to register
     // make sure to have tested bot before registering global cmd
-    const guildId = '904553034892333066';
+    /*const guildId = '904553034892333066';
     const guild = client.guilds.cache.get(guildId)
     let commands;
 
@@ -157,7 +157,7 @@ client.on('ready', () => {
 
         ]
     })
-
+*/
 
 
 })
@@ -332,7 +332,7 @@ client.on("messageCreate", async (message) => {
 
 })
 */
-
+/*
 client.on("interactionCreate", async (interaction) => {
     let msgTimeout = null;
     var quentin_delay = 0;
@@ -396,6 +396,7 @@ client.on("interactionCreate", async (interaction) => {
 
     }
 })
+*/
 
 
 
