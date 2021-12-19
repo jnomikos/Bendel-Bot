@@ -1,4 +1,5 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
+const { SlashCommandBuilder } = require('@discordjs/builders')
 const yts = require("yt-search");
 
 module.exports = {
@@ -7,7 +8,18 @@ module.exports = {
     aliases: ['p', 'steal'],
     description: 'play a song',
     directory: __dirname,
+    data: new SlashCommandBuilder()
+        .setName('play')
+        .setDescription('Sets the prefix for your server')
+        .addStringOption((option) => option
+            .setName('search')
+            .setDescription('URL or Search Term')
+            .setRequired(true)
+        )
+    ,
     async execute(client, message, args) {
+
+
         if (args.length < 1) { return; }
 
         const channel = message.member?.voice.channel;
@@ -18,7 +30,12 @@ module.exports = {
             return;
         }
         let guildQueue = client.player.getQueue(message.guild.id);
-        command_queue_add(client, guildQueue, message, args);
+        if (args.toString().includes('https://')) {
+            command_queue_add(client, guildQueue, message, args);
+        } else {
+            play_music(client, guildQueue, message, args);
+        }
+
     }
 
 }
@@ -28,6 +45,7 @@ module.exports = {
 
 var cmd_queue = [];
 function command_queue_add(client, guildQueue, message, args) {
+
     var cmd = [client, guildQueue, message, args]
     cmd_queue.push(cmd);
     if (cmd_queue.length === 1) {
@@ -42,6 +60,7 @@ function command_queue_add(client, guildQueue, message, args) {
             play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
         }
     });
+
 }
 
 
@@ -71,7 +90,11 @@ async function song_playing_timeout(queue, client, message) {
 }
 
 async function play_music(client, guildQueue, message, args) {
-
+    var isInteraction;
+    if (message.user) {
+        isInteraction = true;
+        args = args.get('search').value.split(" ");
+    }
     //client.commands.get('join').execute(channel); // joins the desired channel
     let queue;
     // if (!guildQueue) {
@@ -175,12 +198,20 @@ async function play_music(client, guildQueue, message, args) {
             var opts = { query: args.join(" "), length: 5 }
             const r = await yts(opts);
             const videos = r.videos; // TODO: Make it only add 6 items to improve performance
-            const filter = i => { // Filter for message component collector for buttons. Put it up here so it can be used in multiple areas
-                return (message.author.id === i.user.id) && i !== undefined && i.customId.substr(0, 6) === 'choice';
+            let userId;
+            if (isInteraction === true) {
+                userId = message.user.id;
+            } else {
+                userId = message.member.id;
             }
-            const coll = message.channel.createMessageComponentCollector({ filter, time: 15 * 1000 });
-            if (!searchingMsg.deleted)
-                searchingMsg.delete();
+            const filter = i => { // Filter for message component collector for buttons. Put it up here so it can be used in multiple areas
+                return (userId === i.user.id) && i !== undefined && i.customId.substr(0, 6) === 'choice';
+            }
+            const coll = message.channel.createMessageComponentCollector({ filter, time: 15 * 100 });
+            if (!isInteraction) {
+                if (!searchingMsg.deleted)
+                    searchingMsg.delete();
+            }
             // If no videos were found from the search
             if (!videos.length) return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
 
@@ -305,10 +336,24 @@ async function play_music(client, guildQueue, message, args) {
             search = search_screen_embed(len);
             const r1 = row1(len);
             const r2 = row2(len);
-            const msgRef = await message.reply({
-                embeds: [search],
-                components: [r1, r2],
-            })
+
+            var msgRef;
+            try {
+                msgRef = await message.editReply({
+                    embeds: [search],
+                    components: [r1, r2],
+                })
+            } catch (error) {
+                try {
+                    msgRef = await message.reply({
+                        embeds: [search],
+                        components: [r1, r2],
+                    })
+                } catch (err) {
+                    console.log(err);
+                    return;
+                }
+            }
 
             setTimeout(() => {
                 coll.stop();

@@ -9,22 +9,25 @@ module.exports = {
         .setDescription('Stops the queue and leaves the voice channel')
     ,
 
-    async interact(client, interaction) {
-        this.execute(client, interaction)
-    },
 
     async execute(client, message, args) {
         const channel = message.member?.voice.channel;
         if (channel === null) {
             message.reply({
-                content: "You must be in a voice channel to use this.",
+                content: "Uh oh! 😲 You must be in a voice channel to use this.",
                 ephemeral: true
             })
+            return;
         }
-        let guildQueue = client.player.getQueue(message.guild.id);
 
+        let guildQueue = client.player.getQueue(message.guild.id);
         if (guildQueue)
             guildQueue.stop();
+
+        message.reply({
+            content: "Left the voice channel! 😭",
+            ephemeral: true
+        })
     }
 
 }

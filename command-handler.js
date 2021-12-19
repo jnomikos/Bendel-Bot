@@ -77,7 +77,7 @@ module.exports = async (client) => {
             }
         }
         try {
-            command.interact(client, interaction, options);
+            command.execute(client, interaction, options);
 
         } catch (error) {
             //     console.log(error);

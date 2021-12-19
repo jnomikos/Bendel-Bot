@@ -8,9 +8,6 @@ module.exports = {
         .setDescription('Joins the voice channel')
     ,
     directory: __dirname,
-    async interact(client, interaction) {
-        this.execute(client, interaction)
-    },
 
 
     async execute(client, message, args) {
@@ -28,7 +25,8 @@ module.exports = {
 
         if (channel == null) {
             message.reply({
-                content: "You must be in a voice channel first!",
+                content: "Uh oh! 😲 You must be in a voice channel to use this.",
+                ephemeral: true
             })
             return;
         } else {
@@ -38,7 +36,7 @@ module.exports = {
                 await queue.join(message.member.voice.channel);
                 // if (isInteraction) {
                 message.reply({
-                    content: "Joined the voice channel",
+                    content: "Joined the voice channel 🔥",
                     ephemeral: true
                 })
                 //}
