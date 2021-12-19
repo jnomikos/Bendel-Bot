@@ -21,8 +21,8 @@ module.exports = async (client) => {
     console.log(directories);
 
     const guildId = '904553034892333066';
-    //const guild = client.guilds.cache.get(guildId)
-    const guild = undefined;
+    const guild = client.guilds.cache.get(guildId)
+    //const guild = undefined;
     //let commands;
     let commands;
     if (guild) {
@@ -107,6 +107,7 @@ module.exports = async (client) => {
             } else {
                 p = guildData.prefix;
             }
+            console.log(guildData.fire_toggle)
             if (guildData.fire_toggle === true) {
                 let fire_chance = Math.floor(Math.random() * 50);
                 console.log(fire_chance)

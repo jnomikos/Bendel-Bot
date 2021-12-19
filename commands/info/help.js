@@ -9,10 +9,10 @@ module.exports = {
     name: 'help',
     description: 'Get info on all commands available',
     directory: __dirname,
-    data: new SlashCommandBuilder()
-        .setName('help')
-        .setDescription('Shows a list of commands available')
-    ,
+    //data: new SlashCommandBuilder()
+    //    .setName('help')
+    //    .setDescription('Shows a list of commands available')
+    //,
     async execute(client, message, args) {
         client.player.emit("help");
         const directories = [
