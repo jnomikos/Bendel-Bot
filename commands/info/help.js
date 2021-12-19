@@ -14,7 +14,7 @@ module.exports = {
         .setDescription('Shows a list of commands available')
     ,
     async execute(client, message, args) {
-
+        client.player.emit("help");
         const directories = [
             ...new Set(client.commands.map((cmd) => cmd.directory)),
         ]
@@ -80,6 +80,9 @@ module.exports = {
         const coll = message.channel.createMessageComponentCollector({ filter, componentType: 'SELECT_MENU', time: 15 * 1000 });
 
         coll.on('collect', async i => {
+            client.player.once("help", () => {
+                coll.stop();
+            })
             //await i.deferUpdate();
             const [directory] = i.values;
 
