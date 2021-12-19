@@ -30,11 +30,11 @@ module.exports = {
             return;
         }
         let guildQueue = client.player.getQueue(message.guild.id);
-        if (args.toString().includes('https://')) {
-            command_queue_add(client, guildQueue, message, args);
-        } else {
-            play_music(client, guildQueue, message, args);
-        }
+        //if (args.toString().includes('https://')) {
+        command_queue_add(client, guildQueue, message, args);
+        //} else {
+        //    play_music(client, guildQueue, message, args);
+        //}
 
     }
 
@@ -60,6 +60,13 @@ function command_queue_add(client, guildQueue, message, args) {
             play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
         }
     });
+
+    client.player.once('newSearch', () => {
+        cmd_queue.shift();
+        if (cmd_queue.length > 0) {
+            play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
+        }
+    })
 
 }
 
@@ -193,7 +200,6 @@ async function play_music(client, guildQueue, message, args) {
                 content: "Searching..."
             })
             //const { videos } = await yts(args.join(" "));
-
             // Uses yt-search package to search youtube for search term
             var opts = { query: args.join(" "), length: 5 }
             const r = await yts(opts);
@@ -207,7 +213,7 @@ async function play_music(client, guildQueue, message, args) {
             const filter = i => { // Filter for message component collector for buttons. Put it up here so it can be used in multiple areas
                 return (userId === i.user.id) && i !== undefined && i.customId.substr(0, 6) === 'choice';
             }
-            const coll = message.channel.createMessageComponentCollector({ filter, time: 15 * 100 });
+            const coll = message.channel.createMessageComponentCollector({ filter, time: 15 * 1000 });
             if (!isInteraction) {
                 if (!searchingMsg.deleted)
                     searchingMsg.delete();
@@ -216,7 +222,7 @@ async function play_music(client, guildQueue, message, args) {
             if (!videos.length) return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
 
 
-            client.player.emit('newSearch');
+
             var len = 0;
             function search_screen_embed(len) {
                 search_screen = new MessageEmbed()
@@ -336,7 +342,6 @@ async function play_music(client, guildQueue, message, args) {
             search = search_screen_embed(len);
             const r1 = row1(len);
             const r2 = row2(len);
-
             var msgRef;
             try {
                 msgRef = await message.editReply({
@@ -356,10 +361,11 @@ async function play_music(client, guildQueue, message, args) {
             }
 
             setTimeout(() => {
+                client.player.emit('newSearch');
                 coll.stop();
-                if (!msgRef.deleted)
-                    msgRef.delete();
-            }, 30 * 1000);
+                //if (!msgRef.deleted)
+                //    msgRef.delete();
+            }, 15 * 1000);
 
             //message.member.id
 
@@ -372,7 +378,7 @@ async function play_music(client, guildQueue, message, args) {
                 //    components: [],
                 //})
             }
-
+            client.player.emit('newSearch');
             client.player.once('newSearch', newSearch);
 
             coll.on('collect', async i => {
