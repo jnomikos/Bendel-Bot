@@ -39,8 +39,9 @@ const myEmitter = new MyEmitter();
 const player = new Player(client, {
     leaveOnEmpty: true, // This options are optional.
     leaveOnEnd: true,
+    timeout: 300 * 1000,
     leaveOnStop: true,
-    //timeout: 300 * 1000
+
 });
 client.player = player;
 

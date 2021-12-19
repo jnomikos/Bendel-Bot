@@ -22,8 +22,7 @@ module.exports = async (client) => {
 
     const guildId = '904553034892333066';
     const guild = client.guilds.cache.get(guildId)
-    //const guild = undefined;
-    //let commands;
+
     let commands;
     if (guild) {
         console.log("Bot test initiated");
