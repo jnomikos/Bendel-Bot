@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@discordjs/opus": "^0.6.0",
     "@discordjs/voice": "^0.7.2",
     "discord-music-player": "github:jnomikos/discord-music-player",
     "discord.js": "^13.3.1",

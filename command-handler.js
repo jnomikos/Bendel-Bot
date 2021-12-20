@@ -21,15 +21,15 @@ module.exports = async (client) => {
     console.log(directories);
 
     const guildId = '904553034892333066';
-    const guild = client.guilds.cache.get(guildId)
+    //const guild = client.guilds.cache.get(guildId)
 
-    let commands;
-    if (guild) {
-        console.log("Bot test initiated");
-        commands = guild.commands;
-    } else {
-        commands = client.application?.commands;
-    }
+    //let commands;
+    //if (guild) {
+    //    console.log("Bot test initiated");
+    //    commands = guild.commands;
+    //} else {
+    commands = client.application?.commands;
+    //}
 
     //client.commands?.get('play');
     //client.commands?.get('join');
