@@ -6,6 +6,7 @@ const getDirectories = require('./get-directories');
 const mongoose = require('mongoose');
 const guildSchema = require('./database/schema/guild');
 const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
 const { MessageActionRow, MessageSelectMenu } = require('discord.js');
 
 
