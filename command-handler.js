@@ -22,7 +22,7 @@ module.exports = async (client) => {
 
     console.log(directories);
 
-    // const guildId = '904553034892333066';
+    //const guildId = '904553034892333066';
     const clientId = '905938287850553354';
     //const guild = client.guilds.cache.get(guildId)
 
@@ -75,7 +75,7 @@ module.exports = async (client) => {
             console.log('Started refreshing application (/) commands.');
 
             await rest.put(
-                Routes.applicationGuildCommands(clientId),
+                Routes.applicationCommands(clientId),
                 { body: commands },
             );
 
