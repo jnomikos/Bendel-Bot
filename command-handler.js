@@ -5,6 +5,7 @@ const getFiles = require('./get-files');
 const getDirectories = require('./get-directories');
 const mongoose = require('mongoose');
 const guildSchema = require('./database/schema/guild');
+const { REST } = require('@discordjs/rest');
 const { MessageActionRow, MessageSelectMenu } = require('discord.js');
 
 
@@ -20,7 +21,8 @@ module.exports = async (client) => {
 
     console.log(directories);
 
-    const guildId = '904553034892333066';
+    // const guildId = '904553034892333066';
+    const clientId = '905938287850553354';
     //const guild = client.guilds.cache.get(guildId)
 
     //let commands;
@@ -28,7 +30,7 @@ module.exports = async (client) => {
     //    console.log("Bot test initiated");
     //    commands = guild.commands;
     //} else {
-    commands = client.application?.commands;
+    const commands = [];
     //}
 
     //client.commands?.get('play');
@@ -43,13 +45,17 @@ module.exports = async (client) => {
             commandFile = commandFile.default;
         }
 
+
         const split = command.replace(/\\/g, '/').split('/')
         const commandName = split[split.length - 1].replace(suffix, '')
         client.commands.set(commandName.toLowerCase(), commandFile);
+
+
         if (client.commands.get(commandName.toLowerCase()).data) {
             console.log(client.commands.get(commandName.toLowerCase()).name);
-            commands?.create(client.commands.get(commandName.toLowerCase()).data)
+            commands.push(client.commands.get(commandName.toLowerCase()).data.toJSON());
         }
+
         //command['directory'] = "none"
         if (client.commands.get(commandName.toLowerCase()).aliases) {
             client.commands.get(commandName.toLowerCase()).aliases.forEach(alias => {
@@ -61,6 +67,22 @@ module.exports = async (client) => {
 
 
     }
+
+    const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
+    (async () => {
+        try {
+            console.log('Started refreshing application (/) commands.');
+
+            await rest.put(
+                Routes.applicationGuildCommands(clientId),
+                { body: commands },
+            );
+
+            console.log('Successfully reloaded application (/) commands.');
+        } catch (error) {
+            console.error(error);
+        }
+    })();
 
     client.on("interactionCreate", async (interaction) => {
         if (!interaction.isCommand()) { return; }
@@ -107,7 +129,7 @@ module.exports = async (client) => {
                 p = guildData.prefix;
             }
             if (guildData.fire_toggle === true && !(message.author.bot)) {
-                let fire_chance = Math.floor(Math.random() * 50);
+                let fire_chance = Math.floor(Math.random() * 500);
                 if (fire_chance === 5) {
                     console.log("FIRE!!!")
                     message.react('🔥');
