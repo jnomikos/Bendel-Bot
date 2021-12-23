@@ -8,9 +8,10 @@
     "fluent-ffmpeg": "^2.1.2",
     "mongoose": "^6.0.14",
     "opusscript": "^0.0.8",
+    "save": "^2.4.0",
     "soundcloud-downloader": "^1.0.0",
     "tweetnacl": "^1.0.3",
-    "yt-search": "^2.10.2",
-    "ytdl-core": "^4.9.1"
+    "ytdl-core": "^4.9.1",
+    "ytsr": "^3.5.3"
   }
 }

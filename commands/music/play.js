@@ -1,6 +1,7 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 const { SlashCommandBuilder } = require('@discordjs/builders')
-const yts = require("yt-search");
+
+const ytsr = require('ytsr');
 
 module.exports = {
     name: 'play',
@@ -199,11 +200,10 @@ async function play_music(client, guildQueue, message, args) {
             const searchingMsg = await message.reply({
                 content: "Searching..."
             })
-            //const { videos } = await yts(args.join(" "));
-            // Uses yt-search package to search youtube for search term
-            var opts = { query: args.join(" "), length: 5 }
-            const r = await yts(opts);
-            const videos = r.videos; // TODO: Make it only add 6 items to improve performance
+
+            const r = await ytsr(args.join(" "), { limit: 10 })
+            console.log(r)
+            const videos = r.items;
             let userId;
             if (isInteraction === true) {
                 userId = message.user.id;
