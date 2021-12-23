@@ -201,8 +201,14 @@ async function play_music(client, guildQueue, message, args) {
                 content: "Searching..."
             })
 
-            const r = await ytsr(args.join(" "), { limit: 8 })
+            // filters to only search for videos!!!
+            const filters1 = await ytsr.getFilters(args.join(" "));
+            const filter1 = filters1.get('Type').get('Video');
+
+            const r = await ytsr(filter1.url, { limit: 10 })
             console.log(r)
+
+
             //console.log(r)
             const videos = r.items;
             let userId;
@@ -235,34 +241,34 @@ async function play_music(client, guildQueue, message, args) {
 
                     .addFields(
                         {
-                            name: videos[len] != undefined && videos[len].type === 'video' ? `:one: ${videos[len].title}` : '\u200B',
+                            name: videos[len] != undefined ? `:one: ${videos[len].title}` : '\u200B',
 
-                            value: videos[len] != undefined && videos[len].type === 'video' ? `Author: ${videos[len].author}, Duration: [${videos[0].timestamp}]` : '\u200B',
+                            value: videos[len] != undefined ? `Author: ${videos[len].author.name}, Duration: [${videos[0].duration}]` : '\u200B',
 
-
-                        },
-                        {
-                            name: videos[len + 1] != undefined && videos[len + 1].type === 'video' ? `:two: ${videos[len + 1].title}` : '\u200B',
-
-                            value: videos[len + 1] != undefined && videos[len + 1].type === 'video' ? `Author: ${videos[len + 1].author}, Duration: [${videos[len + 1].timestamp}]` : '\u200B',
 
                         },
                         {
-                            name: videos[len + 2] != undefined && videos[len + 2].type === 'video' ? `:three: ${videos[len + 2].title}` : '\u200B',
+                            name: videos[len + 1] != undefined ? `:two: ${videos[len + 1].title}` : '\u200B',
 
-                            value: videos[len + 2] != undefined && videos[len + 2].type === 'video' ? `Author: ${videos[len + 2].author}, Duration: [${videos[len + 2].timestamp}]` : '\u200B',
-
-                        },
-                        {
-                            name: videos[len + 3] != undefined && videos[len + 3].type === 'video' ? `:four: ${videos[len + 3].title}` : '\u200B',
-
-                            value: videos[len + 3] != undefined && videos[len + 3].type === 'video' ? `Author: ${videos[len + 3].author}, Duration: [${videos[len + 3].timestamp}]` : '\u200B',
+                            value: videos[len + 1] != undefined ? `Author: ${videos[len + 1].author.name}, Duration: [${videos[len + 1].duration}]` : '\u200B',
 
                         },
                         {
-                            name: videos[len + 4] != undefined && videos[len + 4].type === 'video' ? `:five: ${videos[len + 4].title}` : '\u200B',
+                            name: videos[len + 2] != undefined ? `:three: ${videos[len + 2].title}` : '\u200B',
 
-                            value: videos[len + 4] != undefined && videos[len + 4].type === 'video' ? `Author: ${videos[len + 4].author}, Duration: [${videos[len + 4].timestamp}]` : '\u200B',
+                            value: videos[len + 2] != undefined ? `Author: ${videos[len + 2].author.name}, Duration: [${videos[len + 2].duration}]` : '\u200B',
+
+                        },
+                        {
+                            name: videos[len + 3] != undefined ? `:four: ${videos[len + 3].title}` : '\u200B',
+
+                            value: videos[len + 3] != undefined ? `Author: ${videos[len + 3].author.name}, Duration: [${videos[len + 3].duration}]` : '\u200B',
+
+                        },
+                        {
+                            name: videos[len + 4] != undefined ? `:five: ${videos[len + 4].title}` : '\u200B',
+
+                            value: videos[len + 4] != undefined ? `Author: ${videos[len + 4].author.name}, Duration: [${videos[len + 4].duration}]` : '\u200B',
 
                         },
                     )
@@ -280,7 +286,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('1')
                             //.setEmoji('1️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[len] === undefined || videos[len].type !== 'video')
+                            .setDisabled(videos[len] === undefined)
                     )
 
                     .addComponents(
@@ -289,7 +295,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('2')
                             // .setEmoji('2️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[len + 1] === undefined || videos[len + 1].type !== 'video')
+                            .setDisabled(videos[len + 1] === undefined)
                     )
 
                     .addComponents(
@@ -298,7 +304,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('3')
                             // .setEmoji('3️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[len + 2] === undefined || videos[len + 2].type !== 'video')
+                            .setDisabled(videos[len + 2] === undefined)
                     )
 
                     .addComponents(
@@ -307,7 +313,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('4')
                             // .setEmoji('4️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[len + 3] === undefined || videos[len + 3].type !== 'video')
+                            .setDisabled(videos[len + 3] === undefined)
                     )
 
                     .addComponents(
@@ -316,7 +322,7 @@ async function play_music(client, guildQueue, message, args) {
                             .setLabel('5')
                             // .setEmoji('5️⃣')
                             .setStyle('PRIMARY')
-                            .setDisabled(videos[len + 4] === undefined || videos[len + 4].type !== 'video')
+                            .setDisabled(videos[len + 4] === undefined)
                     )
                 return r1;
             }
