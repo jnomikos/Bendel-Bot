@@ -203,6 +203,7 @@ async function play_music(client, guildQueue, message, args) {
 
             const r = await ytsr(args.join(" "), { limit: 10 })
             console.log(r)
+            //console.log(r)
             const videos = r.items;
             let userId;
             if (isInteraction === true) {
@@ -215,14 +216,15 @@ async function play_music(client, guildQueue, message, args) {
             }
             const coll = message.channel.createMessageComponentCollector({ filter, time: 15 * 1000 });
             if (!isInteraction) {
-                if (!searchingMsg.deleted)
+                if (!searchingMsg.deleted) {
                     searchingMsg.delete();
+                }
             }
             // If no videos were found from the search
             if (!videos.length) return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
 
 
-
+            console.log(videos[15] != undefined);
             var len = 0;
             function search_screen_embed(len) {
                 search_screen = new MessageEmbed()
@@ -233,34 +235,34 @@ async function play_music(client, guildQueue, message, args) {
 
                     .addFields(
                         {
-                            name: videos[len] ? `:one: ${videos[len].title}` : '\u200B',
+                            name: videos[len] != undefined ? `:one: ${videos[len].title}` : '\u200B',
 
-                            value: videos[len] ? `Author: ${videos[len].author.name}, Duration: [${videos[0].timestamp}]` : '\u200B',
+                            value: videos[len] != undefined ? `Author: ${videos[len].author.name}, Duration: [${videos[0].timestamp}]` : '\u200B',
 
-
-                        },
-                        {
-                            name: videos[len + 1] ? `:two: ${videos[len + 1].title}` : '\u200B',
-
-                            value: videos[len + 1] ? `Author: ${videos[len + 1].author.name}, Duration: [${videos[len + 1].timestamp}]` : '\u200B',
 
                         },
                         {
-                            name: videos[len + 2] ? `:three: ${videos[len + 2].title}` : '\u200B',
+                            name: videos[len + 1] != undefined ? `:two: ${videos[len + 1].title}` : '\u200B',
 
-                            value: videos[len + 2] ? `Author: ${videos[len + 2].author.name}, Duration: [${videos[len + 2].timestamp}]` : '\u200B',
-
-                        },
-                        {
-                            name: videos[len + 3] ? `:four: ${videos[len + 3].title}` : '\u200B',
-
-                            value: videos[len + 3] ? `Author: ${videos[len + 3].author.name}, Duration: [${videos[len + 3].timestamp}]` : '\u200B',
+                            value: videos[len + 1] != undefined ? `Author: ${videos[len + 1].author.name}, Duration: [${videos[len + 1].timestamp}]` : '\u200B',
 
                         },
                         {
-                            name: videos[len + 4] ? `:five: ${videos[len + 4].title}` : '\u200B',
+                            name: videos[len + 2] != undefined ? `:three: ${videos[len + 2].title}` : '\u200B',
 
-                            value: videos[len + 4] ? `Author: ${videos[len + 4].author.name}, Duration: [${videos[len + 4].timestamp}]` : '\u200B',
+                            value: videos[len + 2] != undefined ? `Author: ${videos[len + 2].author.name}, Duration: [${videos[len + 2].timestamp}]` : '\u200B',
+
+                        },
+                        {
+                            name: videos[len + 3] != undefined ? `:four: ${videos[len + 3].title}` : '\u200B',
+
+                            value: videos[len + 3] != undefined ? `Author: ${videos[len + 3].author.name}, Duration: [${videos[len + 3].timestamp}]` : '\u200B',
+
+                        },
+                        {
+                            name: videos[len + 4] != undefined ? `:five: ${videos[len + 4].title}` : '\u200B',
+
+                            value: videos[len + 4] != undefined ? `Author: ${videos[len + 4].author.name}, Duration: [${videos[len + 4].timestamp}]` : '\u200B',
 
                         },
                     )
@@ -361,7 +363,9 @@ async function play_music(client, guildQueue, message, args) {
             }
 
             setTimeout(() => {
-                client.player.emit('newSearch');
+                if (!msgRef.deleted)
+                    msgRef.delete();
+                //client.player.emit('newSearch');
                 coll.stop();
                 //if (!msgRef.deleted)
                 //    msgRef.delete();
