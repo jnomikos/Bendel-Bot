@@ -37,7 +37,7 @@ module.exports = {
         //    play_music(client, guildQueue, message, args);
         //}
 
-    }
+    }, song_playing_timeout
 
 }
 
