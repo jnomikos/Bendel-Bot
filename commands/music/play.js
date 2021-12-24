@@ -141,17 +141,22 @@ async function play_music(client, guildQueue, message, args) {
                     load_msg = await message.reply(`\`Loading songs from the playlist. This may take a while...\``);
                 }
 
+                const playlistAdd = function playlistAdd(queue, playlist) {
+                    message.channel.send(`\`Playlist ${playlist} with ${playlist.songs.length} videos was added to the queue.\``);
+                }
+
+                client.player.once('playlistAdd', playlistAdd);
                 var worked = true;
                 let song = await queue.playlist(args.join(' ')).then(_ => {
                     if (load_msg != undefined) {
                         load_msg.delete();
-                        message.channel.send(`\`Playlist added to queue\``).then(m => {
-                            setTimeout(() => m.delete(), 2000);
-                        })
                     }
+
                 }).catch(error => {
                     if (!guildQueue || !guildQueue.songs[0])
                         queue.stop();
+
+                    client.player.removeListener('playlistAdd', playlistAdd);
                     //Promise.reject(error);
                     //song_chosen = false; // failure
                     // return;
@@ -159,7 +164,7 @@ async function play_music(client, guildQueue, message, args) {
                     worked = false;
                 });
 
-
+                console.log(song)
                 client.player.emit("songLoaded");
 
 
