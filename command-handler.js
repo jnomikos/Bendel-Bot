@@ -130,7 +130,7 @@ module.exports = async (client) => {
                 p = guildData.prefix;
             }
             if (guildData.fire_toggle === true && !(message.author.bot)) {
-                let fire_chance = Math.floor(Math.random() * 500);
+                let fire_chance = Math.floor(Math.random() * 5000);
                 if (fire_chance === 5) {
                     console.log("FIRE!!!")
                     message.react('🔥');
