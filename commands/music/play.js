@@ -201,7 +201,7 @@ async function play_music(client, guildQueue, message, args) {
 
 
         } else {
-            console.log("Searching..."); // TODO: tell user of it searching
+            console.log("👀 Searching..."); // TODO: tell user of it searching
             const searchingMsg = await message.reply({
                 content: "Searching..."
             })
