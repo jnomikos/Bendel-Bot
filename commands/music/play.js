@@ -210,11 +210,14 @@ async function play_music(client, guildQueue, message, args) {
             const filters1 = await ytsr.getFilters(args.join(" "));
             const filter1 = filters1.get('Type').get('Video');
 
+            if (!filter1.url) {
+                client.player.emit("songLoaded");
+                return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
+            }
+
             const r = await ytsr(filter1.url, { limit: 10 })
-            console.log(r)
 
 
-            //console.log(r)
             const videos = r.items;
             let userId;
             if (isInteraction === true) {
