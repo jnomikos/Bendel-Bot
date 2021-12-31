@@ -232,7 +232,12 @@ async function play_music(client, guildQueue, message, args) {
                 }
             }
             // If no videos were found from the search
-            if (!videos.length) return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
+            if (!videos.length) {
+
+                client.player.emit("songLoaded");
+                return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
+
+            }
 
 
             console.log(videos[15] != undefined);
