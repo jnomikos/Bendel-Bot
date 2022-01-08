@@ -2,6 +2,8 @@ const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 const { SlashCommandBuilder } = require('@discordjs/builders')
 
 const ytsr = require('ytsr');
+const { client } = require("../..");
+
 
 module.exports = {
     name: 'play',
@@ -42,7 +44,27 @@ module.exports = {
 }
 
 
+client.player.on('queueAdded', (queue, song, message) => {
+    console.log("Song added to queue of ", queue.size)
+    //console.log(queue.songs.length);
+    if (queue.songs.length > 0) {
+        //const song_name = ht.includes("soundcloud.com") ? song.title : song;
+        //console.log(song_name);
 
+        playing_now = new MessageEmbed()
+            .setColor('#c5e2ed')
+            .setTitle("Song added to queue: ")
+            .setDescription(`${song.name || song.title}`)
+
+            .setTimestamp()
+
+
+
+        message.channel.send({
+            embeds: [playing_now]
+        })
+    }
+});
 
 var cmd_queue = [];
 function command_queue_add(client, guildQueue, message, args) {
@@ -53,8 +75,16 @@ function command_queue_add(client, guildQueue, message, args) {
         play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3]);
     }
 
-    client.player.once('songLoaded', () => {
+    client.player.once('songLoaded', (queue) => {
         console.log("Song loaded")
+        console.log(queue)
+        if (queue) {
+            if (queue.songs.length > 0) {
+                console.log("AAAAH!")
+                //console.log(queue.songs[queue.songs.length - 1])
+                client.player.emit('queueAdded', queue, queue.songs[queue.songs.length - 1], message)
+            }
+        }
         cmd_queue.shift();
         console.log(cmd_queue.length)
         if (cmd_queue.length > 0) {
@@ -165,7 +195,7 @@ async function play_music(client, guildQueue, message, args) {
                 });
 
                 console.log(song)
-                client.player.emit("songLoaded");
+                client.player.emit("songLoaded", guildQueue);
 
 
                 if (isFirst && worked === true) {
@@ -194,7 +224,7 @@ async function play_music(client, guildQueue, message, args) {
                     //song_chosen = false; // failure
                     return;
                 });
-                client.player.emit("songLoaded");
+                client.player.emit("songLoaded", guildQueue);
 
 
             }
@@ -211,7 +241,7 @@ async function play_music(client, guildQueue, message, args) {
             const filter1 = filters1.get('Type').get('Video');
 
             if (!filter1.url) {
-                client.player.emit("songLoaded");
+                client.player.emit("songLoaded", guildQueue);
                 return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
             }
 
@@ -237,7 +267,7 @@ async function play_music(client, guildQueue, message, args) {
             // If no videos were found from the search
             if (!videos.length) {
 
-                client.player.emit("songLoaded");
+                client.player.emit("songLoaded", guildQueue);
                 return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
 
             }
@@ -472,7 +502,7 @@ async function play_music(client, guildQueue, message, args) {
                             song_playing_timeout(queue, client, message)
                         }
                     }
-                    client.player.emit("songLoaded");
+                    client.player.emit("songLoaded", guildQueue);
 
                     client.player.removeListener('newSearch', newSearch);
                     coll.stop();
@@ -481,45 +511,6 @@ async function play_music(client, guildQueue, message, args) {
             });
         }
     });
-
-
-
-    //if (song_chosen === true) {
-    const consumer = () => {
-        song_chosen.then(
-
-            result => {
-                console.log("Resolved");
-
-                const songAdd = function songAdd(queue, song) {
-                    console.log("Song added to queue of ", queue.size)
-                    console.log(queue.songs.length);
-                    if (queue.songs.length > 0) {
-                        //const song_name = ht.includes("soundcloud.com") ? song.title : song;
-                        //console.log(song_name);
-
-                        playing_now = new MessageEmbed()
-                            .setColor('#c5e2ed')
-                            .setTitle("Song added to queue: ")
-                            .setDescription(`${song.name || song.title}`)
-
-                            .setTimestamp()
-
-
-
-                        message.channel.send({
-                            embeds: [playing_now]
-                        })
-                    }
-                }
-
-                client.player.once("songAdd", songAdd);
-
-            }
-        );
-    }
-
-    consumer();
 
 }
 
