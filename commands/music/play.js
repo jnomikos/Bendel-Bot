@@ -498,7 +498,8 @@ async function play_music(client, guildQueue, message, args) {
                             .setDescription('An unexpected error has occured, please try again...')
                             .setImage('https://imgpile.com/images/U2Lhgk.png')
 
-                        i.editReply({ // loading reply
+                        //i.editReply({ // loading reply
+                        message.channel.send({
                             content: "Video failed to add. Please try again... (If the problem continues with this video, it is likely youtube preventing it from downloading)",
                             embeds: [severe_error],
                             components: []
