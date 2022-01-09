@@ -495,7 +495,7 @@ async function play_music(client, guildQueue, message, args) {
                         const severe_error = new MessageEmbed()
                             .setColor('#cc0000')
                             .setTitle('Error')
-                            .setDescription('An unexpected error has occured, please try again...')
+                            .setDescription('Video failed to add...')
                             .setImage('https://imgpile.com/images/U2Lhgk.png')
 
                         //i.editReply({ // loading reply
