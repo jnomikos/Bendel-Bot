@@ -74,16 +74,23 @@ function command_queue_add(client, guildQueue, message, args) {
     if (cmd_queue.length === 1) {
         play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3]);
     }
-
-    client.player.once('songLoaded', (queue) => {
+    console.log(message)
+    client.player.once('songLoaded', (queue, loaded) => {
         console.log("Song loaded")
-        console.log(queue)
-        if (queue) {
-            if (queue.songs.length > 0) {
-                console.log("AAAAH!")
-                //console.log(queue.songs[queue.songs.length - 1])
+        console.log(!message.content.includes("/sets/"))
+        if (queue && queue.songs.length > 0 && loaded === true) {
+            //if (message.content.includes("https://")) {
+
+            if (!message.content.includes("&list=") && !message.content.includes("playlist") && !message.content.includes("/sets/")) {
+
                 client.player.emit('queueAdded', queue, queue.songs[queue.songs.length - 1], message)
+
             }
+            //} else {
+            //  client.player.emit('queueAdded', queue, queue.songs[queue.songs.length - 1], message)
+            //}
+
+
         }
         cmd_queue.shift();
         console.log(cmd_queue.length)
@@ -161,7 +168,7 @@ async function play_music(client, guildQueue, message, args) {
             if (queue.songs.length > 0) {
                 hasMusic = true;
             }
-            if (ht.includes("list=") || ht.includes("playlist") || ht.includes("sets")) { // checks if link is a playlist
+            if (ht.includes("&list=") || ht.includes("playlist") || ht.includes("/sets/")) { // checks if link is a playlist
                 let isFirst = queue.songs.length === 0;
                 // direct integration from soundcloud
                 let load_msg = undefined;
@@ -195,7 +202,7 @@ async function play_music(client, guildQueue, message, args) {
                 });
 
                 console.log(song)
-                client.player.emit("songLoaded", guildQueue);
+                client.player.emit("songLoaded", guildQueue, worked);
 
 
                 if (isFirst && worked === true) {
@@ -211,12 +218,14 @@ async function play_music(client, guildQueue, message, args) {
                 //}
 
             } else { // Else; if the message sent is not a playlist
+                let worked = true;
                 let song = await queue.play(args.join(' ')).then(_ => {
                     resolve();
                     if (queue.songs.length === 1) {
                         song_playing_timeout(queue, client, message);
                     }
                 }).catch(_ => {
+                    worked = false;
                     if (!guildQueue) {
                         queue.stop();
                         console.log("Guild queue stopped");
@@ -224,7 +233,7 @@ async function play_music(client, guildQueue, message, args) {
                     //song_chosen = false; // failure
                     return;
                 });
-                client.player.emit("songLoaded", guildQueue);
+                client.player.emit("songLoaded", guildQueue, worked);
 
 
             }
@@ -241,7 +250,7 @@ async function play_music(client, guildQueue, message, args) {
             const filter1 = filters1.get('Type').get('Video');
 
             if (!filter1.url) {
-                client.player.emit("songLoaded", guildQueue);
+                client.player.emit("songLoaded", guildQueue, false);
                 return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
             }
 
@@ -267,7 +276,7 @@ async function play_music(client, guildQueue, message, args) {
             // If no videos were found from the search
             if (!videos.length) {
 
-                client.player.emit("songLoaded", guildQueue);
+                client.player.emit("songLoaded", guildQueue, false);
                 return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
 
             }
@@ -483,9 +492,15 @@ async function play_music(client, guildQueue, message, args) {
 
                     let song = await queue.play(videos[choice + len].url).catch(_ => {
 
+                        const severe_error = new MessageEmbed()
+                            .setColor('#cc0000')
+                            .setTitle('Error')
+                            .setDescription('An unexpected error has occured, please try again...')
+                            .setImage('https://imgpile.com/images/U2Lhgk.png')
+
                         i.editReply({ // loading reply
-                            content: "Video failed to add. Please try again",
-                            embeds: [],
+                            content: "Video failed to add. Please try again... (If the problem continues with this video, it is likely youtube preventing it from downloading)",
+                            embeds: [severe_error],
                             components: []
                         });
                         //if (!guildQueue) {
@@ -502,7 +517,7 @@ async function play_music(client, guildQueue, message, args) {
                             song_playing_timeout(queue, client, message)
                         }
                     }
-                    client.player.emit("songLoaded", guildQueue);
+                    client.player.emit("songLoaded", guildQueue, worked);
 
                     client.player.removeListener('newSearch', newSearch);
                     coll.stop();
