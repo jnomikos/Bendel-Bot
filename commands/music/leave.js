@@ -21,13 +21,20 @@ module.exports = {
         }
 
         let guildQueue = client.player.getQueue(message.guild.id);
-        if (guildQueue)
+        if (guildQueue) {
             guildQueue.stop();
+            message.reply({
+                content: "Left the voice channel! 😭",
+                ephemeral: true
+            })
+        } else {
+            message.reply({
+                content: "I am not connected to a voice channel...",
+                ephemeral: true
+            })
+        }
 
-        message.reply({
-            content: "Left the voice channel! 😭",
-            ephemeral: true
-        })
+
     }
 
 }

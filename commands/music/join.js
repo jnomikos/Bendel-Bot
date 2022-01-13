@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders')
+const { Permissions } = require('discord.js');
 module.exports = {
     name: 'join',
     aliases: ['j', 'enter'],
@@ -16,6 +17,11 @@ module.exports = {
         //     isInteraction = true;
         //args = args.get('prefix').value;
         //}
+
+        if (!message.guild.me.permissions.has(Permissions.FLAGS.CONNECT)) {
+            message.reply("I do not have permissions to connect to voice channels")
+            return;
+        }
 
         const channel = message.member?.voice.channel;
         let guildQueue = client.player.getQueue(message.guild.id);
@@ -43,7 +49,7 @@ module.exports = {
             } catch (error) {
                 console.log("Error in queue join")
                 console.log(error);
-
+                return;
             }
         }
     }

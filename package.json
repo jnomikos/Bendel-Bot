@@ -6,12 +6,13 @@
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
     "fluent-ffmpeg": "^2.1.2",
+    "lyrics-finder": "^21.7.0",
     "mongoose": "^6.0.14",
     "opusscript": "^0.0.8",
     "save": "^2.4.0",
     "soundcloud-downloader": "^1.0.0",
     "tweetnacl": "^1.0.3",
-    "ytdl-core": "^4.9.1",
+    "ytdl-core": "^4.10.0",
     "ytsr": "^3.5.3"
   }
 }

@@ -1,8 +1,9 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 const { SlashCommandBuilder } = require('@discordjs/builders')
-
+const lyrics = require('lyrics-finder'); // npm i lyrics-finder
 const ytsr = require('ytsr');
 const { client } = require("../..");
+const { Permissions } = require('discord.js');
 
 
 module.exports = {
@@ -22,6 +23,15 @@ module.exports = {
     ,
     async execute(client, message, args) {
 
+        if (!message.guild.me.permissions.has(Permissions.FLAGS.CONNECT)) {
+            message.reply("I do not have permissions to connect to voice channels")
+            return;
+        }
+        if (!message.guild.me.permissions.has(Permissions.FLAGS.SPEAK)) {
+            message.reply("I cannot play music. I do not have speaking permissions");
+
+            return;
+        }
 
         if (args.length < 1) { return; }
 
@@ -74,7 +84,6 @@ function command_queue_add(client, guildQueue, message, args) {
     if (cmd_queue.length === 1) {
         play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3]);
     }
-    console.log(message)
     client.player.once('songLoaded', (queue, loaded) => {
         console.log("Song loaded")
         console.log(!message.content.includes("/sets/"))
@@ -152,9 +161,10 @@ async function play_music(client, guildQueue, message, args) {
 
     try {
         await queue.join(message.member.voice.channel);
-    } catch (error) {
+    } catch (error) { // good when the bot is timed out or doesn't have perms
         console.log("Error in queue join")
         console.log(error);
+        return;
     }
 
     /*
@@ -282,7 +292,7 @@ async function play_music(client, guildQueue, message, args) {
             }
 
 
-            console.log(videos[15] != undefined);
+
             var len = 0;
             function search_screen_embed(len) {
                 search_screen = new MessageEmbed()
@@ -476,8 +486,8 @@ async function play_music(client, guildQueue, message, args) {
                         return;
                     }
 
-                    i.editReply({ // loading reply
-                        content: "Hold on a second, adding the video...",
+                    let msg = i.editReply({ // loading reply
+                        content: "<a:Loading:931258756644360272> Hold on a second, adding the video...",
                         embeds: [],
                         components: []
                     });
@@ -517,6 +527,7 @@ async function play_music(client, guildQueue, message, args) {
                         if (queue.songs.length === 1) {
                             song_playing_timeout(queue, client, message)
                         }
+                        msgRef.delete();
                     }
                     client.player.emit("songLoaded", guildQueue, worked);
 
@@ -576,7 +587,6 @@ var song_now_playing = async function (client, message) {
     //console.log(guildQueue.length)
     let current_song = guildQueue.songs[0];
     //console.log(current_song)
-
     let artist;
     var duration = '\u200B';
     if (current_song.title) {
@@ -613,6 +623,7 @@ var song_now_playing = async function (client, message) {
         )
         .setImage(`${current_song.thumbnail || current_song.artwork_url}`)
         .setTimestamp()
+    //.setFooter(`Added by ${message.author.tag}`, message.author.displayAvatarURL());
 
 
     const r = new MessageActionRow()
@@ -666,6 +677,13 @@ var song_now_playing = async function (client, message) {
 
         )
 
+        .addComponents(
+            new MessageButton()
+                .setCustomId('1_lyrics')
+                .setEmoji('🔠')
+                .setStyle('SECONDARY')
+        )
+
 
 
     //message.channel.send({
@@ -714,7 +732,7 @@ var song_now_playing = async function (client, message) {
         console.log(`Error: ${error} in ${queue.guild.name} `);
         console.log(error);
         if (error === "Status code: 403") {
-            console.log("403 time");
+            console.log("403 time?");
             msg.delete();
             cmd_collector.stop();
             remove_event_listeners();
@@ -739,7 +757,7 @@ var song_now_playing = async function (client, message) {
     }
 
 
-
+    var lyrics_toggled = false;
     cmd_collector.on('collect', async i => {
         if (i === undefined) { return; }
 
@@ -759,14 +777,20 @@ var song_now_playing = async function (client, message) {
 
 
         if (i.customId === '1_play-pause') {
+            let embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL());
             //await i.deferUpdate();
             if (guildQueue.paused === true) {
                 guildQueue.setPaused(false);
-                msg.edit("Resumed");
+                embed.setDescription("Resumed").setColor('#75fa1e')
             } else if (guildQueue.paused === false) {
                 guildQueue.setPaused(true);
-                msg.edit("Paused the player");
+                embed.setDescription("Paused").setColor('#fa251e')
             }
+
+            msg.edit({
+                embeds: [embed, playing_now],
+                components: [r, r2]
+            });
 
         } else if (i.customId === '1_next') {
             if (guildQueue.songs.length > 1) {
@@ -834,6 +858,53 @@ var song_now_playing = async function (client, message) {
         } else if (i.customId === '1_shuffle') {
             message.channel.send("The queue has been shuffled");
             guildQueue.shuffle();
+        } else if (i.customId === '1_lyrics') {
+
+            if (lyrics_toggled === true) {
+                msg.edit({
+                    embeds: [playing_now],
+                    components: [r, r2]
+                });
+                lyrics_toggled = false;
+            } else {
+                let song_name = current_song.name || current_song.title;
+
+                var song_info;
+                let lyric = "NOT FOUND";
+                var lyrics_found = false;
+                if (song_name.includes("-")) {
+                    song_info = song_name.split("-");
+
+                } else if (song_name.includes("–")) {
+                    song_info = song_name.split("–");
+                } else if (song_name.includes(":")) {
+                    song_info = song_name.split(":");
+                }
+
+                console.log(song_name)
+
+
+                if (song_info[1].includes("(")) {
+                    song_info[1] = song_info[1].split("(")[0]
+                }
+
+
+                lyric = await lyrics(song_info[0], song_info[1]) || "NOT FOUND";
+                // artist variable declared above
+                let lyrics_embed = new MessageEmbed().setColor('RANDOM').setFooter(`Lyrics Requested by ${i.user.tag}`, i.user.displayAvatarURL());
+
+
+
+                //let lyric = await lyrics("Queen", "Bohemian Rhapsody") || "NOT FOUND";
+
+                lyrics_embed.setDescription(lyric.length >= 4093 ? lyric.substring(0, 4093) + '...' : lyric);
+                msg.edit({
+                    embeds: [playing_now, lyrics_embed],
+                    components: [r, r2]
+                });
+                lyrics_toggled = true;
+            }
+            //i.editReply({ embeds: [lyrics_embed] })
         } else {
             cmd_collector.stop();
             //return;
