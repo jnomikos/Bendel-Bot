@@ -761,7 +761,7 @@ var song_now_playing = async function (client, message) {
 
         // Basically ensures that the buttons and embed shows up when the song is actually loaded to prevent errors
         song_playing_timeout(queue, client, message);
-
+        msg.delete();
 
         cmd_collector.stop();
         remove_event_listeners();
@@ -840,7 +840,7 @@ var song_now_playing = async function (client, message) {
                 try {
                     skippedSong = guildQueue.skip();
                     i_embed.setDescription(`Skipped \`${guildQueue.songs[0].name || guildQueue.songs[0].title}\``).setTimestamp();
-                    msg.delete();
+                    //msg.delete();
                     message.channel.send({
                         embeds: [i_embed]
                     })
@@ -859,7 +859,7 @@ var song_now_playing = async function (client, message) {
                     //}
                 }
             } else {
-                msg.delete();
+                //msg.delete();
                 //msg.edit({
                 //    content: "The queue has ended",
                 //    embeds: [],
