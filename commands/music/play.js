@@ -603,10 +603,8 @@ var song_now_playing = async function (client, message) {
     //console.log(guildQueue.length)
     function playing_now_embed() {
         let current_song = guildQueue.songs[0];
-        //console.log(current_song)
         let artist;
         var duration = '\u200B';
-        console.log(current_song)
         if (current_song.title) {
             duration = duration_converter(current_song.duration);
             if (!current_song.publisher_metadata) {
@@ -648,23 +646,23 @@ var song_now_playing = async function (client, message) {
     }
     // this is a function to generate it everytime it is called
     function action_r() {
-        console.log(guildQueue.getRepeatMode());
         const r = new MessageActionRow()
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('1_play-pause')
-                    .setEmoji(guildQueue.paused === false ? '⏸' : '▶')
-                    .setStyle(guildQueue.paused === true ? 'SUCCESS' : 'SECONDARY')
-
-
-            )
 
             .addComponents(
                 new MessageButton()
                     .setCustomId('1_back')
                     .setEmoji('⏮')
                     .setStyle('SECONDARY')
-                    .setDisabled(old_queue.length > 0 ? false : true)
+                    .setDisabled(old_queue.length > 0 && guildQueue.getRepeatMode() === 0 ? false : true)
+
+            )
+
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('1_play-pause')
+                    .setEmoji(guildQueue.paused === false ? '⏸' : '▶')
+                    .setStyle(guildQueue.paused === true ? 'SUCCESS' : 'SECONDARY')
+
 
             )
 
@@ -838,7 +836,6 @@ var song_now_playing = async function (client, message) {
                 if (guildQueue.paused === true) {
 
                     guildQueue.setPaused(false); // resumes the player if skipped because paused skip is weird
-                    console.log(guildQueue.paused)
                 }
                 try {
                     skippedSong = guildQueue.skip();
@@ -991,8 +988,6 @@ var song_now_playing = async function (client, message) {
                 } else {
                     song_info = song_name;
                 }
-
-                console.log(song_name)
 
 
                 if (song_info[1].includes("(")) {
