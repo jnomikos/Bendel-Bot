@@ -53,6 +53,24 @@ module.exports = {
 
 }
 
+let old_queue = [];
+client.player.on('songChanged', (queue, newSong, oldSong) => {
+    if (queue.getRepeatMode() != 1)
+        old_queue.push(oldSong);
+});
+
+client.player.on('queueDestroyed', (queue) => {
+    old_queue = [];
+})
+client.player.on('queueEnd', (queue) => {
+    old_queue = [];
+})
+client.player.on('clientDisconnect', (queue) => {
+    old_queue = [];
+});
+client.player.on('channelEmpty', (queue) => {
+    old_queue = [];
+});
 
 client.player.on('queueAdded', (queue, song, message) => {
     console.log("Song added to queue of ", queue.size)
@@ -102,7 +120,6 @@ function command_queue_add(client, guildQueue, message, args) {
 
         }
         cmd_queue.shift();
-        console.log(cmd_queue.length)
         if (cmd_queue.length > 0) {
             play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
         }
@@ -211,7 +228,6 @@ async function play_music(client, guildQueue, message, args) {
                     worked = false;
                 });
 
-                console.log(song)
                 client.player.emit("songLoaded", guildQueue, worked);
 
 
@@ -585,105 +601,130 @@ var song_now_playing = async function (client, message) {
     //duration_converter(songDuration);
     //const cmd_collector = message.channel.createMessageComponentCollector({ filter, time: 30 * 1000 });
     //console.log(guildQueue.length)
-    let current_song = guildQueue.songs[0];
-    //console.log(current_song)
-    let artist;
-    var duration = '\u200B';
-    if (current_song.title) {
-        duration = duration_converter(current_song.duration);
-        if (!current_song.publisher_metadata.artist) {
-            artist = current_song.user.username;
-        } else if (current_song.publisher_metadata.artist) {
-            artist = current_song.publisher_metadata.artist;
+    function playing_now_embed() {
+        let current_song = guildQueue.songs[0];
+        //console.log(current_song)
+        let artist;
+        var duration = '\u200B';
+        console.log(current_song)
+        if (current_song.title) {
+            duration = duration_converter(current_song.duration);
+            if (!current_song.publisher_metadata) {
+                artist = current_song.user.username;
+            } else if (current_song.publisher_metadata) {
+                if (current_song.publisher_metadata.artist) {
+                    artist = current_song.publisher_metadata.artist;
+                } else {
+                    artist = "n/a"
+                }
+            } else {
+                artist = "n/a"
+            }
+        } else if (current_song.author) {
+            artist = current_song.author;
+            duration = current_song.duration;
+            if (String(duration).length === 5) {
+                duration = "00:" + duration;
+            } else if (String(duration).length === 2) {
+                duration = "00:00:" + duration;
+            }
         } else {
             artist = "n/a"
         }
-    } else if (current_song.author) {
-        artist = current_song.author;
-        duration = current_song.duration;
-        if (String(duration).length === 5) {
-            duration = "00:" + duration;
-        } else if (String(duration).length === 2) {
-            duration = "00:00:" + duration;
-        }
-    } else {
-        artist = "n/a"
+
+        playing_now = new MessageEmbed()
+            .setColor('#c5e2ed')
+            .setTitle("Playing: ")
+            //.setDescription(`${guildQueue.songs[0].name || current_song.title}`)
+            .addFields(
+                { name: guildQueue.songs[0].name || guildQueue.songs[0].title, value: artist },
+                //{ name: 'Author', value: current_song.author || current_song.publisher_metadata.artist || "none", inline: true },
+                { name: "▬▬▬▬▬▬▬▬▬▬▬▬▬▬ [ 00:00:00/" + duration + "]", value: '\u200B' },
+            )
+            .setImage(`${guildQueue.songs[0].thumbnail || guildQueue.songs[0].artwork_url}`)
+            .setTimestamp()
+        //.setFooter(`Added by ${message.author.tag}`, message.author.displayAvatarURL());
+        return playing_now;
+    }
+    // this is a function to generate it everytime it is called
+    function action_r() {
+        console.log(guildQueue.getRepeatMode());
+        const r = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('1_play-pause')
+                    .setEmoji(guildQueue.paused === false ? '⏸' : '▶')
+                    .setStyle(guildQueue.paused === true ? 'SUCCESS' : 'SECONDARY')
+
+
+            )
+
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('1_back')
+                    .setEmoji('⏮')
+                    .setStyle('SECONDARY')
+                    .setDisabled(old_queue.length > 0 ? false : true)
+
+            )
+
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('1_next')
+                    .setEmoji('⏭')
+                    .setStyle('SECONDARY')
+
+            )
+
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('1_loop')
+                    .setEmoji(`🔁`)
+                    .setStyle(guildQueue.getRepeatMode() === 1 ?
+                        'DANGER' : 'SECONDARY')
+
+            )
+
+        return r;
     }
 
+    function action_r2() {
+        const r2 = new MessageActionRow()
 
-    console.log(guildQueue.songs[0].duration)
-    playing_now = new MessageEmbed()
-        .setColor('#c5e2ed')
-        .setTitle("Playing: ")
-        //.setDescription(`${guildQueue.songs[0].name || current_song.title}`)
-        .addFields(
-            { name: guildQueue.songs[0].name || current_song.title, value: artist },
-            //{ name: 'Author', value: current_song.author || current_song.publisher_metadata.artist || "none", inline: true },
-            { name: "▬▬▬▬▬▬▬▬▬▬▬▬▬▬ [ 00:00:00/" + duration + "]", value: '\u200B' },
-        )
-        .setImage(`${current_song.thumbnail || current_song.artwork_url}`)
-        .setTimestamp()
-    //.setFooter(`Added by ${message.author.tag}`, message.author.displayAvatarURL());
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('1_loop-songs')
+                    .setEmoji('🔂')
+                    .setStyle(guildQueue.getRepeatMode() === 2 ?
+                        'DANGER' : 'SECONDARY')
 
+            )
 
-    const r = new MessageActionRow()
-        .addComponents(
-            new MessageButton()
-                .setCustomId('1_play-pause')
-                .setEmoji(`⏯`)
-                .setStyle('SECONDARY')
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('1_stop')
+                    .setEmoji('⏹')
+                    .setStyle('SECONDARY')
 
+            )
 
-        )
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('1_shuffle')
+                    .setEmoji('🔀')
+                    .setStyle('SECONDARY')
 
-        .addComponents(
-            new MessageButton()
-                .setCustomId('1_next')
-                .setEmoji('⏭')
-                .setStyle('SECONDARY')
+            )
 
-        )
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('1_lyrics')
+                    .setEmoji('🔠')
+                    .setStyle('SECONDARY')
+            )
 
-        .addComponents(
-            new MessageButton()
-                .setCustomId('1_loop')
-                .setEmoji(`🔁`)
-                .setStyle('SECONDARY')
-
-        )
-
-        .addComponents(
-            new MessageButton()
-                .setCustomId('1_loop-songs')
-                .setEmoji('🔂')
-                .setStyle('SECONDARY')
-
-        )
-
-    const r2 = new MessageActionRow()
-        .addComponents(
-            new MessageButton()
-                .setCustomId('1_stop')
-                .setEmoji('⏹')
-                .setStyle('SECONDARY')
-
-        )
-
-        .addComponents(
-            new MessageButton()
-                .setCustomId('1_shuffle')
-                .setEmoji('🔀')
-                .setStyle('SECONDARY')
-
-        )
-
-        .addComponents(
-            new MessageButton()
-                .setCustomId('1_lyrics')
-                .setEmoji('🔠')
-                .setStyle('SECONDARY')
-        )
-
+        return r2;
+    }
 
 
     //message.channel.send({
@@ -695,8 +736,8 @@ var song_now_playing = async function (client, message) {
 
 
     const msg = await message.channel.send({
-        embeds: [playing_now],
-        components: [r, r2]
+        embeds: [playing_now_embed()],
+        components: [action_r(), action_r2()]
     });
 
     const queueDestroyed = function queueDestroyed(queue) {
@@ -775,21 +816,21 @@ var song_now_playing = async function (client, message) {
 
         //}
 
-
+        let i_embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL());
         if (i.customId === '1_play-pause') {
-            let embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL());
+            //let embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL());
             //await i.deferUpdate();
             if (guildQueue.paused === true) {
                 guildQueue.setPaused(false);
-                embed.setDescription("Resumed").setColor('#75fa1e')
+                i_embed.setDescription("Resumed").setColor('#75fa1e').setTimestamp()
             } else if (guildQueue.paused === false) {
                 guildQueue.setPaused(true);
-                embed.setDescription("Paused").setColor('#fa251e')
+                i_embed.setDescription("Paused").setColor('#fa251e').setTimestamp()
             }
 
             msg.edit({
-                embeds: [embed, playing_now],
-                components: [r, r2]
+                embeds: [i_embed, playing_now_embed()],
+                components: [action_r(), action_r2()]
             });
 
         } else if (i.customId === '1_next') {
@@ -797,21 +838,25 @@ var song_now_playing = async function (client, message) {
                 if (guildQueue.paused === true) {
 
                     guildQueue.setPaused(false); // resumes the player if skipped because paused skip is weird
-
+                    console.log(guildQueue.paused)
                 }
                 try {
                     skippedSong = guildQueue.skip();
-                    msg.edit({
-                        content: "The song was skipped",
-                        embeds: [],
-                        components: []
-                    }).then(m => {
-                        setTimeout(() => m.delete(), 2000);
+                    i_embed.setDescription(`Skipped \`${guildQueue.songs[0].name || guildQueue.songs[0].title}\``).setTimestamp();
+                    msg.delete();
+                    message.channel.send({
+                        embeds: [i_embed]
                     })
+                    //     embeds: [i_embed],
+                    //     components: []
+                    // }).then(m => {
+                    //     setTimeout(() => m.delete(), 2000);
+                    // })
 
 
 
                 } catch (error) {
+                    message.channel.send("Error skipping the song, please try again");
                     //if (error.statusCode('403')) {
                     //    console.log("Error, status code 403")
                     //}
@@ -823,7 +868,8 @@ var song_now_playing = async function (client, message) {
                 //    embeds: [],
                 //    components: []
                 //})
-
+                i_embed.setDescription(`Skipped \`${guildQueue.songs[0].name}\``).setTimestamp();
+                message.channel.send({ embeds: [i_embed] });
                 message.channel.send("The queue has ended.");
 
                 remove_event_listeners();
@@ -831,39 +877,102 @@ var song_now_playing = async function (client, message) {
                 cmd_collector.stop();
             }
 
+        } else if (i.customId === '1_back') {
+            console.log("old queue length", old_queue.length)
+            let embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL()).setDescription("😱 Rewinding! 💿 ");
+            msg.edit({
+                embeds: [embed],
+                components: []
+            });
+
+            if (guildQueue.getRepeatMode() === 1) {
+                try {
+                    skippedSong = guildQueue.skip();
+                } catch (error) {
+                    console.log(error);
+                }
+            } else {
+                let song = old_queue.pop();
+                if (song.url) {
+                    song = song.url;
+                } else {
+                    song = song.uri; // Soundcloud songs label url differently
+                }
+                let song_2 = await guildQueue.play(song, {
+                    index: 0,
+                }).catch(_ => {
+                    if (!guildQueue)
+                        queue.stop();
+                });
+
+                msg.edit({
+                    embeds: [playing_now_embed()],
+                    components: [action_r(), action_r2()]
+                });
+                //msg.delete();
+                //guildQueue.skip();
+                //console.log("Old queue", old_queue)
+                //old_queue.pop();
+                //console.log("Old queue", old_queue)
+                //console.log(old_queue.length)
+            }
+
+
         } else if (i.customId === '1_loop') {
             if (guildQueue.getRepeatMode() === 1) {
                 guildQueue.setRepeatMode(0);
+                i_embed.setDescription(`Loop mode has been disabled`).setTimestamp();
 
-                message.channel.send("Loop mode has been stopped")
 
             } else {
                 guildQueue.setRepeatMode(1);
-
-                message.channel.send("This song will now loop! (Press the button again to unloop)");
+                i_embed.setDescription(`Loop mode enabled! \`(Press the button again to unloop)\``).setTimestamp();
             }
+
+            // edits msg to change color of the loop button
+            msg.edit({
+                embeds: [playing_now_embed()],
+                components: [action_r(), action_r2()]
+            });
+
+            message.channel.send({ embeds: [i_embed] })
         } else if (i.customId === '1_loop-songs') {
             if (guildQueue.getRepeatMode() === 2) {
                 guildQueue.setRepeatMode(0);
-                message.channel.send("Queue loop mode has been stopped")
+                i_embed.setDescription("Disabled queue loop").setTimestamp();
             } else {
                 guildQueue.setRepeatMode(2);
-                message.channel.send("The entire queue will now loop");
+                i_embed.setDescription("The entire queue will now loop").setTimestamp();
             }
+
+            // edits msg to change color of the queue loop button
+            msg.edit({
+                embeds: [playing_now_embed()],
+                components: [action_r(), action_r2()]
+            });
+
+            message.channel.send({
+                embeds: [i_embed]
+            });
         } else if (i.customId === '1_stop') {
-            message.channel.send("Stopped the queue");
+            i_embed.setDescription(`Stopped the queue`).setTimestamp();
+            msg.delete();
+            message.channel.send({
+                embeds: [i_embed]
+            });
             remove_event_listeners();
             guildQueue.stop();
             cmd_collector.stop();
         } else if (i.customId === '1_shuffle') {
-            message.channel.send("The queue has been shuffled");
+            i_embed.setDescription(`The queue has been shuffled`).setTimestamp();
+            message.channel.send({ embeds: [i_embed] });
             guildQueue.shuffle();
         } else if (i.customId === '1_lyrics') {
 
             if (lyrics_toggled === true) {
                 msg.edit({
-                    embeds: [playing_now],
-                    components: [r, r2]
+                    embeds: [playing_now_embed()],
+                    components: [action_r(), action_r2()]
                 });
                 lyrics_toggled = false;
             } else {
@@ -879,6 +988,8 @@ var song_now_playing = async function (client, message) {
                     song_info = song_name.split("–");
                 } else if (song_name.includes(":")) {
                     song_info = song_name.split(":");
+                } else {
+                    song_info = song_name;
                 }
 
                 console.log(song_name)
@@ -899,8 +1010,8 @@ var song_now_playing = async function (client, message) {
 
                 lyrics_embed.setDescription(lyric.length >= 4093 ? lyric.substring(0, 4093) + '...' : lyric);
                 msg.edit({
-                    embeds: [playing_now, lyrics_embed],
-                    components: [r, r2]
+                    embeds: [playing_now_embed(), lyrics_embed],
+                    components: [action_r(), action_r2()]
                 });
                 lyrics_toggled = true;
             }

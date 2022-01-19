@@ -44,7 +44,14 @@ module.exports = {
                 commands: getCommands
             };
         })
-        console.log(categories);
+
+        // Hides secret commands by removing them from the list
+        for (var x = 0; x < categories.length; x++) {
+            if (categories[x].directory.includes("secret")) {
+                categories.splice(x, 1);
+            }
+        }
+
 
         const embed = new MessageEmbed().setDescription("Please choose a category in the dropdown menu.")
 
@@ -57,7 +64,7 @@ module.exports = {
                     .addOptions(
                         categories.map((cmd) => {
                             return {
-                                label: cmd.directory.replace(/^.*[\\\/]/, ''),
+                                label: !cmd.directory.includes("secret") ? cmd.directory.replace(/^.*[\\\/]/, '') : " ",
                                 description: `Commands from ${cmd.directory.replace(/^.*[\\\/]/, '')}`,
                                 value: cmd.directory.toLowerCase(),
                             }
@@ -84,6 +91,7 @@ module.exports = {
                 coll.stop();
             })
             //await i.deferUpdate();
+            console.log(i.values)
             const [directory] = i.values;
 
             // essentially finds where x.directory is equal to directory choice in categories map
