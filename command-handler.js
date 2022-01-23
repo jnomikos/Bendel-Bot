@@ -65,8 +65,9 @@ module.exports = async (client) => {
             });
         }
 
-
-
+        if (client.commands.get(commandName.toLowerCase()).init) {
+            client.commands.get(commandName.toLowerCase()).init();
+        }
     }
 
     const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
@@ -123,12 +124,14 @@ module.exports = async (client) => {
                 let profile = await guildSchema.create({
                     guildID: message.guild.id, //ID of the guild
                     prefix: '-',
+                    bot_channel: message.channel.id
                 })
                 profile.save();
                 p = '-'
             } else {
                 p = guildData.prefix;
             }
+
             if (guildData.fire_toggle === true && !(message.author.bot)) {
                 let fire_chance = Math.floor(Math.random() * 5000);
                 if (fire_chance === 5) {
@@ -137,19 +140,17 @@ module.exports = async (client) => {
                 }
             }
 
-            //client.user.setActivity(`Bendel Music | ${p}help`, { type: "LISTENING" });
+
         } catch (err) {
             console.log(err);
         }
-        //const data = prefix.findOne({
-        //    GuildID: message.guild.id
-        //});
-
-        //console.log(data.prefix);
-        //let prefix = data ? data.Prefix : '-';
 
         if (!message.content.startsWith(p) || message.author.bot) { return; }
 
+
+        if (message.channel.id !== guildData.botChannel) {
+            console.log("okay")
+        }
         // Our standard argument/command name definition.
         const args = message.content.slice(p.length).trim().split(/ +/);
 
