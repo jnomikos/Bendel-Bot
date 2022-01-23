@@ -1,4 +1,4 @@
 # Bendel-Bot
-This is Bendel Bot. A user-friendly music bot that I have created. 
+A user friendly discord-bot with a modern design
 
 Created by John Nomikos.
