@@ -75,7 +75,7 @@ client.player.on('channelEmpty', (queue) => {
 client.player.on('queueAdded', (queue, song, message) => {
     console.log("Song added to queue of ", queue.size)
     //console.log(queue.songs.length);
-    if (queue.songs.length > 0) {
+    if (queue.songs.length > 1) {
         //const song_name = ht.includes("soundcloud.com") ? song.title : song;
         //console.log(song_name);
 
@@ -95,6 +95,28 @@ client.player.on('queueAdded', (queue, song, message) => {
 });
 
 var cmd_queue = [];
+
+client.player.on('songLoaded', (message, queue, loaded) => {
+    if (queue && queue.songs.length > 0 && loaded === true) {
+        //if (message.content.includes("https://")) {
+
+        if (!message.content.includes("&list=") && !message.content.includes("playlist") && !message.content.includes("/sets/")) {
+
+            client.player.emit('queueAdded', queue, queue.songs[queue.songs.length - 1], message)
+
+        }
+        //} else {
+        //  client.player.emit('queueAdded', queue, queue.songs[queue.songs.length - 1], message)
+        //}
+
+
+    }
+    cmd_queue.shift();
+    if (cmd_queue.length > 0) {
+        play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
+    }
+});
+
 function command_queue_add(client, guildQueue, message, args) {
 
     var cmd = [client, guildQueue, message, args]
@@ -102,28 +124,7 @@ function command_queue_add(client, guildQueue, message, args) {
     if (cmd_queue.length === 1) {
         play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3]);
     }
-    client.player.once('songLoaded', (queue, loaded) => {
-        console.log("Song loaded")
-        console.log(!message.content.includes("/sets/"))
-        if (queue && queue.songs.length > 0 && loaded === true) {
-            //if (message.content.includes("https://")) {
-
-            if (!message.content.includes("&list=") && !message.content.includes("playlist") && !message.content.includes("/sets/")) {
-
-                client.player.emit('queueAdded', queue, queue.songs[queue.songs.length - 1], message)
-
-            }
-            //} else {
-            //  client.player.emit('queueAdded', queue, queue.songs[queue.songs.length - 1], message)
-            //}
-
-
-        }
-        cmd_queue.shift();
-        if (cmd_queue.length > 0) {
-            play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
-        }
-    });
+    console.log(cmd_queue.length)
 
     client.player.once('newSearch', () => {
         cmd_queue.shift();
@@ -228,7 +229,7 @@ async function play_music(client, guildQueue, message, args) {
                     worked = false;
                 });
 
-                client.player.emit("songLoaded", guildQueue, worked);
+                client.player.emit("songLoaded", message, guildQueue, worked);
 
 
                 if (isFirst && worked === true) {
@@ -245,6 +246,8 @@ async function play_music(client, guildQueue, message, args) {
 
             } else { // Else; if the message sent is not a playlist
                 let worked = true;
+
+
                 let song = await queue.play(args.join(' ')).then(_ => {
                     resolve();
                     if (queue.songs.length === 1) {
@@ -259,7 +262,7 @@ async function play_music(client, guildQueue, message, args) {
                     //song_chosen = false; // failure
                     return;
                 });
-                client.player.emit("songLoaded", guildQueue, worked);
+                client.player.emit("songLoaded", message, guildQueue, worked);
 
 
             }
@@ -276,7 +279,7 @@ async function play_music(client, guildQueue, message, args) {
             const filter1 = filters1.get('Type').get('Video');
 
             if (!filter1.url) {
-                client.player.emit("songLoaded", guildQueue, false);
+                client.player.emit("songLoaded", message, guildQueue, false);
                 return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
             }
 
@@ -302,7 +305,7 @@ async function play_music(client, guildQueue, message, args) {
             // If no videos were found from the search
             if (!videos.length) {
 
-                client.player.emit("songLoaded", guildQueue, false);
+                client.player.emit("songLoaded", message, guildQueue, false);
                 return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
 
             }
@@ -461,6 +464,7 @@ async function play_music(client, guildQueue, message, args) {
                 coll.stop();
                 if (!msgRef.deleted)
                     msgRef.delete();
+
                 //msgRef.edit({
                 //    embeds: [],
                 //    components: [],
@@ -545,7 +549,8 @@ async function play_music(client, guildQueue, message, args) {
                         }
                         msgRef.delete();
                     }
-                    client.player.emit("songLoaded", guildQueue, worked);
+
+                    client.player.emit("songLoaded", message, guildQueue, worked);
 
                     client.player.removeListener('newSearch', newSearch);
                     coll.stop();
@@ -724,30 +729,18 @@ var song_now_playing = async function (client, message) {
         return r2;
     }
 
-
-    //message.channel.send({
-    //     embeds: [playing_now],
-    //     components: [r, r2]
-    // }).then(msg => {
-    //     setTimeout(() => collector_instance = false, 10000 * 50)
-    // })
-
-
     const msg = await message.channel.send({
         embeds: [playing_now_embed()],
         components: [action_r(), action_r2()]
     });
 
     const queueDestroyed = function queueDestroyed(queue) {
+        msg.delete();
         cmd_collector.stop();
         remove_event_listeners();
     }
     const queueEnd = function queueEnd(queue) {
-        msg.edit({
-            content: "The queue has ended.",
-            embeds: [],
-            components: []
-        })
+        msg.delete();
         cmd_collector.stop();
         remove_event_listeners();
     }
@@ -801,18 +794,13 @@ var song_now_playing = async function (client, message) {
         if (i === undefined) { return; }
 
 
-        //cmd_collector.stop();
+
 
         await i.deferUpdate();
-        //await i.deferUpdate();
-        //console.log("Yeah");
+
         if (!client.player.hasQueue(message.guild.id)) { cmd_collector.stop(); }
         guildQueue = await client.player.getQueue(i.guild.id);
 
-
-        //function send_msg() {
-
-        //}
 
         let i_embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL());
         if (i.customId === '1_play-pause') {
@@ -832,6 +820,8 @@ var song_now_playing = async function (client, message) {
             });
 
         } else if (i.customId === '1_next') {
+            i_embed.setDescription(`Skipped \`${guildQueue.songs[0].name || guildQueue.songs[0].title}\``).setTimestamp();
+            message.channel.send({ embeds: [i_embed] });
             if (guildQueue.songs.length > 1) {
                 if (guildQueue.paused === true) {
 
@@ -839,43 +829,17 @@ var song_now_playing = async function (client, message) {
                 }
                 try {
                     skippedSong = guildQueue.skip();
-                    i_embed.setDescription(`Skipped \`${guildQueue.songs[0].name || guildQueue.songs[0].title}\``).setTimestamp();
-                    //msg.delete();
-                    message.channel.send({
-                        embeds: [i_embed]
-                    })
-                    //     embeds: [i_embed],
-                    //     components: []
-                    // }).then(m => {
-                    //     setTimeout(() => m.delete(), 2000);
-                    // })
-
-
-
                 } catch (error) {
                     message.channel.send("Error skipping the song, please try again");
-                    //if (error.statusCode('403')) {
-                    //    console.log("Error, status code 403")
-                    //}
                 }
             } else {
-                //msg.delete();
-                //msg.edit({
-                //    content: "The queue has ended",
-                //    embeds: [],
-                //    components: []
-                //})
-                i_embed.setDescription(`Skipped \`${guildQueue.songs[0].name}\``).setTimestamp();
-                message.channel.send({ embeds: [i_embed] });
-                message.channel.send("The queue has ended.");
+                message.channel.send("The queue has ended");
 
-                remove_event_listeners();
                 guildQueue.stop();
                 cmd_collector.stop();
             }
 
         } else if (i.customId === '1_back') {
-            console.log("old queue length", old_queue.length)
             let embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL()).setDescription("😱 Rewinding! 💿 ");
             msg.edit({
                 embeds: [embed],
