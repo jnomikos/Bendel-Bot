@@ -45,6 +45,8 @@ module.exports = {
             message.reply("You do not have permissions for this command");
             return;
         }
+
+        message.reply("Premium added")
         const file = new MessageAttachment(`files/Thank_You.mp3`);
 
         // args.shift();
