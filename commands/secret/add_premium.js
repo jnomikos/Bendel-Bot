@@ -35,7 +35,7 @@ module.exports = {
                 })
             }
             await premiumSchedule.deleteMany(query);
-            setTimeout(checkPremiumExpire, 10000 * 2);
+            setTimeout(checkPremiumExpire, 1000 * 60 * 60);
         }
         checkPremiumExpire();
     },
@@ -96,7 +96,7 @@ module.exports = {
                 )
                 .addField('You help keep this bot alive 💪', '🔥🔥🔥🔥🔥🔥', true)
                 .setImage('https://i.imgur.com/RUnqAoX.png')
-                .setFooter('Premium Activated <a:samdance:902019561245790260>');
+                .setFooter('Premium Activated');
 
 
             thank_channel.send({
