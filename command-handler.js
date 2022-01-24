@@ -149,13 +149,23 @@ module.exports = async (client) => {
 
 
         if (message.channel.id !== guildData.botChannel) {
-            console.log("okay")
+
+            const query = {
+                guildID: {
+                    $eq: message.guild.id
+                }
+            }
+
+            await guildSchema.updateOne(guildData, {
+                bot_channel: message.channel.id
+            })
+
         }
         // Our standard argument/command name definition.
         const args = message.content.slice(p.length).trim().split(/ +/);
 
-
-
+        //const channel1 = client.channels.cache.find(channel => channel.id === "904553034892333070")
+        //channel1.send("test")
         const commandName = args.shift().toLowerCase();
         if (!client.commands.get(commandName) && !client.commands.get(aliases[commandName])) {
             return;

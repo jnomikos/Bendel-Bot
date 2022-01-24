@@ -2,6 +2,7 @@ const premiumSchedule = require('../../database/schema/premium_schedule')
 const guildSchema = require('../../database/schema/guild');
 
 const { MessageAttachment } = require("discord.js");
+const { MessageEmbed } = require('discord.js');
 module.exports = {
     name: 'add_premium',
     directory: __dirname,
@@ -45,9 +46,12 @@ module.exports = {
             return;
         }
         const file = new MessageAttachment(`files/Thank_You.mp3`);
-        message.channel.send({ files: [file] })
+
         // args.shift();
         let [guild, months] = args;
+        if (!months) {
+            months = 1
+        }
 
         const query = {
             guildID: {
@@ -55,7 +59,9 @@ module.exports = {
             }
         }
         const results = await guildSchema.find(query);
+        console.log("Results", results[0].bot_channel)
 
+        //channel1.send("test")
         for (const servers of results) {
             const server_query = {
                 guildID: {
@@ -69,13 +75,38 @@ module.exports = {
             })
         }
 
-        var date = new Date(); // Now
-        var target_date = new Date(); // Now
 
-        if (!months) {
-            months = 1
-        }
+        var target_date = new Date(); // Now
         target_date.setDate(target_date.getDate() + 30 * months); // Set now + 30 days as the new date
+
+        if (results[0].bot_channel) {
+            const thank_channel = client.channels.cache.find(channel => channel.id === results[0].bot_channel)
+
+            const donateEmbed = new MessageEmbed()
+                .setColor('#FFD700')
+                .setTitle(`Thank You For the Support! 🙏`)
+                .setDescription(`😲 ${months} Month(s) of Premium Activated! 🤯`)
+                .setThumbnail('https://i.imgur.com/h9PsAKr.png')
+                .addFields(
+                    { name: 'Expires on', value: `${target_date.toDateString()}` },
+                    { name: '\u200B', value: '\u200B' },
+
+                )
+                .addField('You help keep this bot alive 💪', '🔥🔥🔥🔥🔥🔥', true)
+                .setImage('https://i.imgur.com/RUnqAoX.png')
+                .setFooter('Premium Activated <a:samdance:902019561245790260>');
+
+
+            thank_channel.send({
+                content: "🔥🔥🔥🔥🔥🔥🔥",
+                embeds: [donateEmbed],
+
+            })
+            thank_channel.send({
+                files: [file]
+            });
+        }
+
 
         console.log(months)
         //target_date = target_date.toDateString().split(" ")
