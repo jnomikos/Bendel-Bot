@@ -5,6 +5,7 @@ module.exports = {
     name: 'toggle_fire',
     description: 'Makes Bendel react to messages with a fire emoji randomly sometimes',
     directory: __dirname,
+    permission: ['ADMINISTRATOR'],
     async execute(client, message, args) {
         if (!message.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
             message.reply("Error: Only administrators can use this command");

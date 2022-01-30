@@ -171,7 +171,21 @@ module.exports = async (client) => {
             return;
         }
 
-        const command = client.commands.get(commandName)
+        // checks if user has permission for said command
+        const command = client.commands.get(commandName);
+        if (command.permission) {
+            const authorPerms = message.channel.permissionsFor(message.member);
+            if (!authorPerms || !authorPerms.has(command.permission)) {
+                message.reply("Error: You do not have permissions to use that command")
+                return;
+            }
+        }
+
+        if (command.premium === true && guildData.premium === false) {
+            message.reply("This is a premium command. Only servers with activated premium can use it");
+            return;
+        }
+
         if (command) {
             try {
                 command.execute(client, message, args);

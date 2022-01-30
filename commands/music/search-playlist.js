@@ -10,6 +10,7 @@ module.exports = {
     aliases: ['playlist'],
     description: 'Searches for playlists to play',
     directory: __dirname,
+    premium: true,
     async execute(client, message, args) {
 
         let queue;

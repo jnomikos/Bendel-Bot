@@ -6,6 +6,7 @@ module.exports = {
     name: 'lyrics',
     description: 'Searches song lyrics from google given a song name',
     directory: __dirname,
+    premium: true,
 
     async execute(client, message, args) {
         if (!args.length) return message.channel.send('No song specified');

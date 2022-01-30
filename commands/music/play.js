@@ -740,6 +740,7 @@ var song_now_playing = async function (client, message) {
         remove_event_listeners();
     }
     const queueEnd = function queueEnd(queue) {
+        message.channel.send("The queue has ended 😭");
         msg.delete();
         cmd_collector.stop();
         remove_event_listeners();

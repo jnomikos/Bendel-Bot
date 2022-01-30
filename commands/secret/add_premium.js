@@ -98,15 +98,16 @@ module.exports = {
                 .setImage('https://i.imgur.com/RUnqAoX.png')
                 .setFooter('Premium Activated');
 
+            if (thank_channel) {
+                thank_channel.send({
+                    content: "🔥🔥🔥🔥🔥🔥🔥",
+                    embeds: [donateEmbed],
 
-            thank_channel.send({
-                content: "🔥🔥🔥🔥🔥🔥🔥",
-                embeds: [donateEmbed],
-
-            })
-            thank_channel.send({
-                files: [file]
-            });
+                })
+                thank_channel.send({
+                    files: [file]
+                });
+            }
         }
 
 
