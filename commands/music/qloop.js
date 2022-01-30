@@ -1,7 +1,7 @@
 module.exports = {
     name: 'qloop',
     aliases: ['queueloop', 'ql'],
-    description: 'Loops the entire queue. If queue loop mode is already enabled, stops looping the queue',
+    description: 'Toggles looping entire queue.',
     directory: __dirname,
     async execute(client, message, args) {
         let guildQueue = client.player.getQueue(message.guild.id);

@@ -1,6 +1,6 @@
 module.exports = {
     name: 'resume',
-    description: 'Resumes playing song if it is paused',
+    description: 'Resumes song',
     directory: __dirname,
     async execute(client, message, args) {
         let guildQueue = client.player.getQueue(message.guild.id);

@@ -2,7 +2,7 @@ module.exports = {
     name: 'remove',
     arguments: '<song-position>',
     aliases: ['rm'],
-    description: 'Removes a song from the queue',
+    description: 'Remove a song from the queue',
     slash_command: true,
     directory: __dirname,
     async execute(client, message, args) {

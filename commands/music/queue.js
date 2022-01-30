@@ -2,7 +2,7 @@ const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 
 module.exports = {
     name: 'queue',
-    description: 'Shows the current song queue',
+    description: 'Shows the song queue',
     slash_command: false,
     directory: __dirname,
     async execute(client, message, args) {

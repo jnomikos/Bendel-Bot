@@ -10,7 +10,7 @@ module.exports = {
     name: 'play',
     arguments: '<song-url / search-query>',
     aliases: ['p', 'steal'],
-    description: 'play a song',
+    description: 'Play a song',
     directory: __dirname,
     data: new SlashCommandBuilder()
         .setName('play')

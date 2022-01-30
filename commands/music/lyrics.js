@@ -4,7 +4,7 @@ const lyrics = require('lyrics-finder'); // npm i lyrics-finder
 
 module.exports = {
     name: 'lyrics',
-    description: 'Searches song lyrics from google given a song name',
+    description: 'Shows song lyrics given a song name',
     directory: __dirname,
     premium: true,
 

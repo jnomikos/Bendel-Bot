@@ -1,7 +1,7 @@
 
 module.exports = {
     name: 'skip',
-    description: 'Skips the current song that is playing',
+    description: 'Skips the current song',
     directory: __dirname,
     async execute(client, message, args) {
         let guildQueue = client.player.getQueue(message.guild.id);

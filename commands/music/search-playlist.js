@@ -8,7 +8,7 @@ module.exports = {
     name: 'search-playlist',
     arguments: '<search-query>',
     aliases: ['playlist'],
-    description: 'Searches for playlists to play',
+    description: 'Searches for YouTube playlists to play',
     directory: __dirname,
     premium: true,
     async execute(client, message, args) {

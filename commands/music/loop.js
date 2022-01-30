@@ -1,7 +1,7 @@
 module.exports = {
     name: 'loop',
     directory: __dirname,
-    description: 'Loops the current song that is playing. If loop mode is already enabled, stops looping the current song that is playing',
+    description: 'Toggles looping the current song.',
     async execute(client, message, args) {
         let guildQueue = client.player.getQueue(message.guild.id);
         if (!guildQueue || !guildQueue.isPlaying) return;
