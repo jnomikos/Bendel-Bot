@@ -270,7 +270,6 @@ async function play_music(client, guildQueue, message, args) {
 
         } else {
             console.log("👀 Searching..."); // TODO: tell user of it searching
-            client.player.emit('newSearch');
             const searchingMsg = await message.reply({
                 content: "👀 Searching..."
             })
@@ -433,6 +432,15 @@ async function play_music(client, guildQueue, message, args) {
             const r1 = row1(len);
             const r2 = row2(len);
             var msgRef;
+
+            const newSearch = function newSearch() {
+                coll.stop();
+                if (msgRef)
+                    msgRef.delete();
+            }
+            client.player.emit('newSearch');
+            client.player.once('newSearch', newSearch);
+
             try {
                 msgRef = await message.editReply({
                     embeds: [search],
@@ -458,21 +466,6 @@ async function play_music(client, guildQueue, message, args) {
                 if (!msgRef.deleted)
                     msgRef.delete();
             }, 15 * 1000);
-
-            //message.member.id
-
-            const newSearch = function newSearch() {
-                coll.stop();
-                if (msgRef)
-                    msgRef.delete();
-
-                //msgRef.edit({
-                //    embeds: [],
-                //    components: [],
-                //})
-            }
-            //client.player.emit('newSearch');
-            client.player.once('newSearch', newSearch);
 
             coll.on('collect', async i => {
                 await i.deferUpdate();
