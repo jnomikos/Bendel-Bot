@@ -172,7 +172,13 @@ module.exports = async (client) => {
         }
 
         // checks if user has permission for said command
-        const command = client.commands.get(commandName);
+        let command = client.commands.get(commandName);
+
+        if (!command) {
+            command = client.commands.get(aliases[commandName]);
+            if (!command) return;
+        }
+
         if (command.permission) {
             const authorPerms = message.channel.permissionsFor(message.member);
             if (!authorPerms || !authorPerms.has(command.permission)) {
@@ -186,21 +192,14 @@ module.exports = async (client) => {
             return;
         }
 
-        if (command) {
-            try {
-                command.execute(client, message, args);
 
-            } catch (error) {
-                console.log(error);
-            }
-        } else {
-            const commandA = client.commands.get(aliases[commandName]);
-            try {
-                commandA.execute(client, message, args);
-            } catch (error) {
-                console.log(error);
-            }
+        try {
+            command.execute(client, message, args);
+
+        } catch (error) {
+            console.log(error);
         }
+
 
 
 
