@@ -47,6 +47,8 @@ module.exports = {
                 });
                 if (resource)
                     queue.connection.playAudioStream(resource);
+
+                message.react('✅');
             })
         }
     }
