@@ -5,6 +5,7 @@ const { Readable } = require('stream');
 
 module.exports = {
     name: 'tts',
+    arguments: 'language code, message',
     description: 'Make Bendel talk!',
     directory: __dirname,
     async execute(client, message, args) {
@@ -30,7 +31,7 @@ module.exports = {
         } catch (error) {
             console.log(error);
             if (error.toString().includes("TypeError: text should be a string")) {
-                message.reply("You need to include the language code before your message. Example: \`-tts en-US Bendel bot is awesome!\` \nLanguage codes can be found here: https://cloud.google.com/speech-to-text/docs/languages");
+                message.reply("You need to include the language code before your message. Example: \`-tts en-US Bendel bot is awesome!\` \nLanguage codes can be found here: <https://cloud.google.com/speech-to-text/docs/languages>");
             }
             return;
         }
@@ -40,15 +41,20 @@ module.exports = {
 
                 let queue = client.player.createQueue(message.guild.id);
                 await queue.join(message.member.voice.channel);
-                const resource = createAudioResource(Readable.from(await download(url)), {
-                    metadata: {
-                        title: 'A good song!',
-                    },
-                });
+                let resource;
+                try {
+                    resource = createAudioResource(Readable.from(await download(url)), {
+                        metadata: {
+                            title: 'A good song!',
+                        },
+                    });
+                } catch (error) {
+                    message.reply("Error downloading tts. Make sure you included a language code before your message: <https://cloud.google.com/speech-to-text/docs/languages>")
+                }
                 if (resource)
                     queue.connection.playAudioStream(resource);
 
-                message.react('✅');
+                message.react('💬');
             })
         }
     }
