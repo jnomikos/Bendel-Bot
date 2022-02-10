@@ -115,7 +115,10 @@ module.exports = async (client) => {
 
         // sam
         if (message.author.id = "319558655496159243") {
-            message.react('<a:sam:902065673210060801>');
+            let sam_chance = Math.floor(Math.random() * 20);
+            if (sam_chance === 2) {
+                message.react('<a:sam:902065673210060801>');
+            }
 
         }
         let guildData;
@@ -139,7 +142,7 @@ module.exports = async (client) => {
             }
 
             if (guildData.fire_toggle === true && !(message.author.bot)) {
-                let fire_chance = Math.floor(Math.random() * 5000);
+                let fire_chance = Math.floor(Math.random() * 2000);
                 if (fire_chance === 5) {
                     console.log("FIRE!!!")
                     message.react('🔥');
