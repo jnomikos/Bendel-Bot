@@ -114,7 +114,7 @@ module.exports = async (client) => {
 
 
         // sam
-        if (message.author.id = "319558655496159243") {
+        if (message.author.id === "319558655496159243") {
             let sam_chance = Math.floor(Math.random() * 20);
             if (sam_chance === 2) {
                 message.react('<a:sam:902065673210060801>');
