@@ -112,6 +112,12 @@ module.exports = async (client) => {
     //console.log(Object.keys(commands));
     client.on('messageCreate', async (message) => {
 
+
+        // sam
+        if (message.author.id = "105067594100277248") {
+            message.react('<a:sam:902065673210060801>');
+
+        }
         let guildData;
         let p;
 
