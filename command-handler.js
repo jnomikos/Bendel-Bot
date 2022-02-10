@@ -114,7 +114,7 @@ module.exports = async (client) => {
 
 
         // sam
-        if (message.author.id = "105067594100277248") {
+        if (message.author.id = "319558655496159243") {
             message.react('<a:sam:902065673210060801>');
 
         }
