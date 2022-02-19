@@ -8,6 +8,7 @@ module.exports = {
     arguments: 'language code, message',
     description: 'Make Bendel talk!',
     directory: __dirname,
+    premium: true,
     async execute(client, message, args) {
 
 
@@ -41,6 +42,7 @@ module.exports = {
 
                 let queue = client.player.createQueue(message.guild.id);
                 await queue.join(message.member.voice.channel);
+
                 let resource;
                 try {
                     resource = createAudioResource(Readable.from(await download(url)), {
