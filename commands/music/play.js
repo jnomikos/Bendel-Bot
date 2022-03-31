@@ -4,6 +4,7 @@ const lyrics = require('lyrics-finder'); // npm i lyrics-finder
 const ytsr = require('ytsr');
 const { client } = require("../..");
 const { Permissions } = require('discord.js');
+const guildSchema = require('../../database/schema/guild');
 
 
 module.exports = {
@@ -54,19 +55,26 @@ module.exports = {
 }
 
 let old_queue = [];
-client.player.on('songChanged', (queue, newSong, oldSong) => {
-    if (queue.getRepeatMode() != 1)
-        old_queue.push(oldSong);
-});
+/*client.player.on('songChanged', async (queue, newSong, oldSong) => {
+    console.log(queue.guild.id)
+    guildData = await guildSchema.findOne({ guildID: queue.guild.id });
+    if (oldSong.url || queue.getRepeatMode() != 1) { // youtube
+        //    song = song.url;
+        await guildSchema.updateOne({ guildID: queue.guild.id, $push: { song_history: oldSong.url } })
+    } else if (oldSong.uri || queue.getRepeatMode() != 1) { // soundcloud
+        await guildSchema.updateOne({ guildID: queue.guild.id, $push: { song_history: oldSong.uri } })
+    }
 
-client.player.on('queueDestroyed', (queue) => {
-    old_queue = [];
+});*/
+
+client.player.on('queueDestroyed', async (queue) => {
+    await guildSchema.updateOne({ guildID: queue.guild.id, $set: { song_history: [] } });
 })
-client.player.on('queueEnd', (queue) => {
-    old_queue = [];
+client.player.on('queueEnd', async (queue) => {
+    await guildSchema.updateOne({ guildID: queue.guild.id, $set: { song_history: [] } });
 })
-client.player.on('clientDisconnect', (queue) => {
-    old_queue = [];
+client.player.on('clientDisconnect', async (queue) => {
+    await guildSchema.updateOne({ guildID: queue.guild.id, $set: { song_history: [] } });
 });
 client.player.on('channelEmpty', (queue) => {
     old_queue = [];
@@ -563,7 +571,7 @@ var song_now_playing = async function (client, message) {
     const filter = i => { // Filter for message component collector
         return i !== undefined && i.customId.substr(0, 2) === '1_';
     }
-
+    guildData = await guildSchema.findOne({ guildID: message.guild.id })
     guildQueue = await client.player.getQueue(message.guild.id);
     //const cmd_collector = message.channel.createMessageComponentCollector({ filter });
     const cmd_collector = message.channel.createMessageComponentCollector({ filter, time: 1000 * 7200 }); // 2 hours
@@ -630,21 +638,24 @@ var song_now_playing = async function (client, message) {
         }
 
         playing_now = new MessageEmbed()
+
             .setColor('#c5e2ed')
             .setTitle("Playing: ")
             //.setDescription(`${guildQueue.songs[0].name || current_song.title}`)
             .addFields(
                 { name: guildQueue.songs[0].name || guildQueue.songs[0].title, value: artist },
                 //{ name: 'Author', value: current_song.author || current_song.publisher_metadata.artist || "none", inline: true },
-                { name: "▬▬▬▬▬▬▬▬▬▬▬▬▬▬ [ 00:00:00/" + duration + "]", value: '\u200B' },
+                { name: "▬▬▬▬▬▬▬▬▬▬▬▬▬ [ 00:00:00/" + duration + "]", value: '\u200B' },
             )
             .setImage(`${guildQueue.songs[0].thumbnail || guildQueue.songs[0].artwork_url}`)
             .setTimestamp()
-        //.setFooter(`Added by ${message.author.tag}`, message.author.displayAvatarURL());
         return playing_now;
     }
+    console.log(guildData.song_history)
+
     // this is a function to generate it everytime it is called
     function action_r() {
+
         const r = new MessageActionRow()
 
             .addComponents(
@@ -652,7 +663,7 @@ var song_now_playing = async function (client, message) {
                     .setCustomId('1_back')
                     .setEmoji('⏮')
                     .setStyle('SECONDARY')
-                    .setDisabled(old_queue.length > 0 && guildQueue.getRepeatMode() === 0 ? false : true)
+                    .setDisabled(guildData.song_history[0] && guildQueue.getRepeatMode() === 0 ? false : true)
 
             )
 
@@ -746,7 +757,13 @@ var song_now_playing = async function (client, message) {
 
     const songChanged = async function songChanged(queue, newSong, oldSong) {
         console.log("SONG CHANGED!!!!");
-
+        guildData = await guildSchema.findOne({ guildID: queue.guild.id });
+        if (oldSong.url || queue.getRepeatMode() != 1) { // youtube
+            //    song = song.url;
+            await guildSchema.updateOne({ guildID: queue.guild.id, $push: { song_history: oldSong.url } })
+        } else if (oldSong.uri || queue.getRepeatMode() != 1) { // soundcloud
+            await guildSchema.updateOne({ guildID: queue.guild.id, $push: { song_history: oldSong.uri } })
+        }
         // Basically ensures that the buttons and embed shows up when the song is actually loaded to prevent errors
         song_playing_timeout(queue, client, message);
         msg.delete();
@@ -848,12 +865,19 @@ var song_now_playing = async function (client, message) {
                     console.log(error);
                 }
             } else {
-                let song = old_queue.pop();
-                if (song.url) {
-                    song = song.url;
-                } else {
-                    song = song.uri; // Soundcloud songs label url differently
-                }
+                console.log("Rewinding");
+                guildData = await guildSchema.findOne({ guildID: message.guild.id })
+                let song = guildData.song_history[0];
+
+                await guildSchema.updateOne({ guildID: message.guild.id, $pop: { song_history: -1 } });
+                //let song = old_queue.pop();
+                // if (song.url) {
+                //    song = song.url;
+                //} else {
+                //    song = song.uri; // Soundcloud songs label url differently
+                //}
+
+
                 let song_2 = await guildQueue.play(song, {
                     index: 0,
                 }).catch(_ => {
@@ -861,10 +885,12 @@ var song_now_playing = async function (client, message) {
                         queue.stop();
                 });
 
-                msg.edit({
+                await msg.edit({
                     embeds: [playing_now_embed()],
                     components: [action_r(), action_r2()]
                 });
+
+
                 //msg.delete();
                 //guildQueue.skip();
                 //console.log("Old queue", old_queue)
