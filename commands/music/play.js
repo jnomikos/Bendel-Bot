@@ -68,13 +68,30 @@ let old_queue = [];
 });*/
 
 client.player.on('queueDestroyed', async (queue) => {
-    await guildSchema.updateOne({ guildID: queue.guild.id, $set: { song_history: [] } });
+    //guildData = await guildSchema.collection.findOne({ guildID: queue.guild.id });
+    console.log(queue.guild.id);
+
+    const query = { guildID: queue.guild.id };
+    const updateDocument = {
+        $set: { song_history: [] }
+    };
+    const result = await guildSchema.updateOne(query, updateDocument);
+
+
 })
 client.player.on('queueEnd', async (queue) => {
-    await guildSchema.updateOne({ guildID: queue.guild.id, $set: { song_history: [] } });
+    const query = { guildID: queue.guild.id };
+    const updateDocument = {
+        $set: { song_history: [] }
+    };
+    const result = await guildSchema.updateOne(query, updateDocument);
 })
 client.player.on('clientDisconnect', async (queue) => {
-    await guildSchema.updateOne({ guildID: queue.guild.id, $set: { song_history: [] } });
+    const query = { guildID: queue.guild.id };
+    const updateDocument = {
+        $set: { song_history: [] }
+    };
+    const result = await guildSchema.updateOne(query, updateDocument);
 });
 client.player.on('channelEmpty', (queue) => {
     old_queue = [];
@@ -758,11 +775,24 @@ var song_now_playing = async function (client, message) {
     const songChanged = async function songChanged(queue, newSong, oldSong) {
         console.log("SONG CHANGED!!!!");
         guildData = await guildSchema.findOne({ guildID: queue.guild.id });
+        const query = { guildID: queue.guild.id };
+
         if (oldSong.url || queue.getRepeatMode() != 1) { // youtube
             //    song = song.url;
-            await guildSchema.updateOne({ guildID: queue.guild.id, $push: { song_history: oldSong.url } })
+            const updateDocument = {
+                $push: { song_history: oldSong.url }
+            };
+
+            const result = await guildSchema.updateOne(query, updateDocument);
+
+            //await guildSchema.updateOne({ query, $push: { song_history: oldSong.url } })
         } else if (oldSong.uri || queue.getRepeatMode() != 1) { // soundcloud
-            await guildSchema.updateOne({ guildID: queue.guild.id, $push: { song_history: oldSong.uri } })
+            const updateDocument = {
+                $push: { song_history: oldSong.uri }
+            };
+
+            const result = await guildSchema.updateOne(query, updateDocument);
+            //await guildSchema.updateOne({ query, $push: { song_history: oldSong.uri } })
         }
         // Basically ensures that the buttons and embed shows up when the song is actually loaded to prevent errors
         song_playing_timeout(queue, client, message);
@@ -866,10 +896,17 @@ var song_now_playing = async function (client, message) {
                 }
             } else {
                 console.log("Rewinding");
-                guildData = await guildSchema.findOne({ guildID: message.guild.id })
-                let song = guildData.song_history[0];
+                const query = { guildID: message.guild.id };
 
-                await guildSchema.updateOne({ guildID: message.guild.id, $pop: { song_history: -1 } });
+                guildData = await guildSchema.findOne(query);
+                let length = guildData.song_history.length;
+                let song = guildData.song_history[length - 1];
+
+                const updateDocument = {
+                    $pop: { song_history: 1 }
+                };
+
+                await guildSchema.updateOne(query, updateDocument);
                 //let song = old_queue.pop();
                 // if (song.url) {
                 //    song = song.url;
