@@ -588,7 +588,6 @@ var song_now_playing = async function (client, message) {
     const filter = i => { // Filter for message component collector
         return i !== undefined && i.customId.substr(0, 2) === '1_';
     }
-    guildData = await guildSchema.findOne({ guildID: message.guild.id })
     guildQueue = await client.player.getQueue(message.guild.id);
     //const cmd_collector = message.channel.createMessageComponentCollector({ filter });
     const cmd_collector = message.channel.createMessageComponentCollector({ filter, time: 1000 * 7200 }); // 2 hours
@@ -668,10 +667,11 @@ var song_now_playing = async function (client, message) {
             .setTimestamp()
         return playing_now;
     }
-    console.log(guildData.song_history)
 
+    const query = { guildID: message.guild.id };
+    GD = await guildSchema.findOne(query);
     // this is a function to generate it everytime it is called
-    function action_r() {
+    function action_r(guildData = GD) {
 
         const r = new MessageActionRow()
 
@@ -921,10 +921,11 @@ var song_now_playing = async function (client, message) {
                     if (!guildQueue)
                         queue.stop();
                 });
-
+                const q = { guildID: message.guild.id };
+                GD = await guildSchema.findOne(q);
                 await msg.edit({
                     embeds: [playing_now_embed()],
-                    components: [action_r(), action_r2()]
+                    components: [action_r(GD), action_r2()]
                 });
 
 
