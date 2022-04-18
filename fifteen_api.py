@@ -114,7 +114,7 @@ class FifteenAPI:
         #    f.write(tts["data"])
      #   f.close()
      #   self.logger.info(f"File saved: {filename}")
-        return {"filename": filename}
+        return filename
 
     # else:
        #     return {"status": tts["status"], "filename": None}
@@ -130,11 +130,8 @@ if __name__ == "__main__":
     # print(text)
     # print("Processing...")
     file = fifteen.save_to_file(character, text, path)
-    if file['filename']:
-        filename = file['filename']
-    else:
-        filename = "Fail"
-    print(filename)
+
+    print(file)
     sys.stdout.flush()
     #input_str = None
     # while input_str != "quit":
