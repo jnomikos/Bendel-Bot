@@ -47,8 +47,8 @@ class FifteenAPI:
 
         text_len = len(text)
         if text_len > self.max_text_len:
-            self.logger.warning(
-                f'Text too long ({text_len} > {self.max_text_len}), trimming to {self.max_text_len} symbols')
+            #    self.logger.warning(
+         #       f'Text too long ({text_len} > {self.max_text_len}), trimming to {self.max_text_len} symbols')
             text = text[:self.max_text_len - 1]
 
         if not text.endswith(".") and not text.endswith("!") and not text.endswith("?"):
