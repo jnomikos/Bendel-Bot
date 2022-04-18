@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import re
 import time
@@ -111,7 +113,7 @@ class FifteenAPI:
             f = open(filename, 'wb')
             f.write(tts["data"])
             f.close()
-            #self.logger.info(f"File saved: {filename}")
+            self.logger.info(f"File saved: {filename}")
             return {"status": tts["status"], "filename": filename}
 
         else:
@@ -119,7 +121,7 @@ class FifteenAPI:
 
 
 if __name__ == "__main__":
-    fifteen = FifteenAPI(show_debug=True)
+    fifteen = FifteenAPI(show_debug=False)
 
     character = str(sys.argv[1])
     path = str(sys.argv[2])
@@ -128,7 +130,10 @@ if __name__ == "__main__":
     # print(text)
     # print("Processing...")
     file = fifteen.save_to_file(character, text, path)
-    filename = file['filename']
+    if file['filename']:
+        filename = file['filename']
+    else:
+        filename = "Fail"
     print(filename)
     sys.stdout.flush()
     #input_str = None
