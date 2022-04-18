@@ -108,15 +108,15 @@ class FifteenAPI:
             if not filename.endswith(".wav"):
                 filename += ".wav"
             #filename = "E:\Docs\\repos\Bot\commands\\fun\\sound_file.wav"
-            f = open('/root/bot/' + filename, 'wb')
+            f = open(filename, 'wb')
             f.write(tts["data"])
             f.close()
             #self.logger.info(f"File saved: {filename}")
             return {"status": tts["status"], "filename": filename}
 
-        else:
-            print("UEUEUEUEUEUE")
-            return {"status": tts["status"], "filename": None}
+        # else:
+            # print("UEUEUEUEUEUE")
+            # return {"status": tts["status"], "filename": None}
 
 
 if __name__ == "__main__":
