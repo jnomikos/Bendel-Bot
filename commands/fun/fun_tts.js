@@ -32,7 +32,7 @@ module.exports = {
 
         const path = __dirname + "/" + message.guild.id + ".wav";
 
-        fs.writeFile(`${message.guild.id}.wav`, '', function (err) {
+        fs.writeFile(`__dirname + "/" + ${message.guild.id}.wav`, '', function (err) {
             if (err) throw err;
             console.log('File is created successfully.');
         });
