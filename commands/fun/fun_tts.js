@@ -20,7 +20,15 @@ module.exports = {
     premium: true,
     async execute(client, message, args) {
 
+        function fix_entry(entry) {
+            if (entry.toLowerCase() === "spongebob squarepants" || entry.toLowerCase() === "spongebob" || entry.toLowerCase() === "sb") {
+                entry = "SpongeBob SquarePants";
+            } else {
+                entry = entry.charAt(0).toUpperCase() + entry.slice(1);
+            }
 
+            return entry;
+        }
 
         const path = message.guild.id + ".wav";
 
@@ -35,14 +43,36 @@ module.exports = {
             message.reply("Text to speech only works when there are no songs in the queue!");
             return;
         }
-        let word = ""
+        let command = ""
+
+
 
         // Puts rest of args in word
-        for (cur = 1; cur < args.length; cur++) {
-            word += args[cur]
+        for (cur = 0; cur < args.length; cur++) {
+            command += args[cur] + " "
         }
 
-        const childPython = spawn('python', ['fifteen_api.py', args[0], path, word]);
+        command = command.split(',');
+        console.log(command[0])
+        console.log(command[1])
+
+        let character = "", word = "";
+        if (command.length < 2) {
+            character = fix_entry(args[0]);
+
+            for (cur = 1; cur < args.length; cur++) {
+                word += args[cur] + " "
+            }
+
+        } else {
+            character = command[0]
+            word = command[1]
+
+            character = fix_entry(character);
+            //console.log(character, " ", word)
+        }
+
+        const childPython = spawn('python', ['fifteen_api.py', character, path, word]);
         let runPy = new Promise(function (success, nosuccess) {
 
             let path;
@@ -73,31 +103,24 @@ module.exports = {
 
 
 
-            setTimeout(() => {
-                resource = createAudioResource(createReadStream(path, {
-                    inputType: StreamType.Raw,
-                }));
-                if (resource)
 
-                    queue.connection.playAudioStream(resource);
+            resource = createAudioResource(createReadStream(path, {
+                inputType: StreamType.Raw,
+            }));
+            if (resource)
 
-                message.react('💬');
+                queue.connection.playAudioStream(resource);
 
-                client.player.once('queueEnd', async (queue) => {
-                    try {
-                        fs.unlinkSync(path)
-                        //file removed
-                    } catch (err) {
-                        console.error(err)
-                    }
-                })
-                //try {
-                //    fs.unlinkSync(path)
-                //     //file removed
-                // } catch (err) {
-                //     console.error(err)
-                // }
-            }, 5000);
+            message.react('💬');
+
+            client.player.once('queueEnd', async (queue) => {
+                try {
+                    fs.unlinkSync(path)
+                    //file removed
+                } catch (err) {
+                    console.error(err)
+                }
+            })
 
         }).catch(function (resolve) {
             console.log("Promise rejected: ", resolve.toString());
