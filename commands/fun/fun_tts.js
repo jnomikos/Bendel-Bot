@@ -21,17 +21,28 @@ module.exports = {
     async execute(client, message, args) {
 
 
+
+        const path = message.guild.id + ".wav";
+
+        fs.writeFile(`${message.guild.id}.wav`, '', function (err) {
+            if (err) throw err;
+            console.log('File is created successfully.');
+        });
+
         let guildQueue = client.player.getQueue(message.guild.id);
 
         if (guildQueue && guildQueue.songs.length > 0) {
             message.reply("Text to speech only works when there are no songs in the queue!");
             return;
         }
+        let word = ""
 
-        console.log(args[1])
+        // Puts rest of args in word
+        for (cur = 1; cur < args.length; cur++) {
+            word += args[cur]
+        }
 
-
-        const childPython = spawn('python', ['fifteen_api.py', args[0], args[1]]);
+        const childPython = spawn('python', ['fifteen_api.py', args[0], path, word]);
         let runPy = new Promise(function (success, nosuccess) {
 
             let path;
@@ -63,7 +74,7 @@ module.exports = {
 
 
             setTimeout(() => {
-                resource = createAudioResource(createReadStream(join(__dirname, "sound_file.wav"), {
+                resource = createAudioResource(createReadStream(path, {
                     inputType: StreamType.Raw,
                 }));
                 if (resource)
@@ -71,6 +82,21 @@ module.exports = {
                     queue.connection.playAudioStream(resource);
 
                 message.react('💬');
+
+                client.player.once('queueEnd', async (queue) => {
+                    try {
+                        fs.unlinkSync(path)
+                        //file removed
+                    } catch (err) {
+                        console.error(err)
+                    }
+                })
+                //try {
+                //    fs.unlinkSync(path)
+                //     //file removed
+                // } catch (err) {
+                //     console.error(err)
+                // }
             }, 5000);
 
         }).catch(function (resolve) {
