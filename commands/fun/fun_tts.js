@@ -20,6 +20,15 @@ module.exports = {
     premium: true,
     async execute(client, message, args) {
 
+
+        let guildQueue = client.player.getQueue(message.guild.id);
+
+        if (guildQueue && guildQueue.songs.length > 0) {
+            message.reply("Text to speech only works when there are no songs in the queue!");
+            return;
+        }
+        let command = ""
+
         function fix_entry(entry) {
             if (entry.toLowerCase() === "spongebob squarepants" || entry.toLowerCase() === "spongebob" || entry.toLowerCase() === "sb") {
                 entry = "SpongeBob SquarePants";
@@ -30,20 +39,12 @@ module.exports = {
             return entry;
         }
 
-        const path = __dirname + "/" + message.guild.id + ".wav";
+        const path = message.guild.id + ".wav";
 
-        fs.writeFile(__dirname + "/" + `${message.guild.id}.wav`, '', function (err) {
+        fs.writeFile(`${message.guild.id}.wav`, '', function (err) {
             if (err) throw err;
             console.log('File is created successfully.');
         });
-
-        let guildQueue = client.player.getQueue(message.guild.id);
-
-        if (guildQueue && guildQueue.songs.length > 0) {
-            message.reply("Text to speech only works when there are no songs in the queue!");
-            return;
-        }
-        let command = ""
 
 
 
@@ -85,9 +86,9 @@ module.exports = {
 
             })
 
-            childPython.stderr.on('data', (data) => {
-                nosuccess(data);
-            });
+            //childPython.stderr.on('data', (data) => {
+            //    nosuccess(data);
+            //});
 
 
 
