@@ -28,7 +28,6 @@ module.exports = {
             return;
         }
         let command = ""
-
         function fix_entry(entry) {
             if (entry.toLowerCase() === "spongebob squarepants" || entry.toLowerCase() === "spongebob" || entry.toLowerCase() === "sb") {
                 entry = "SpongeBob SquarePants";
@@ -86,9 +85,9 @@ module.exports = {
 
             })
 
-            //childPython.stderr.on('data', (data) => {
-            //    nosuccess(data);
-            //});
+            childPython.stderr.on('data', (data) => {
+                nosuccess(data);
+            });
 
 
 
