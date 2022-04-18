@@ -30,7 +30,7 @@ module.exports = {
             return entry;
         }
 
-        const path = message.guild.id + ".wav";
+        const path = __dirname + "/" + message.guild.id + ".wav";
 
         fs.writeFile(`${message.guild.id}.wav`, '', function (err) {
             if (err) throw err;
@@ -75,18 +75,17 @@ module.exports = {
         const childPython = spawn('python', ['fifteen_api.py', character, path, word]);
         let runPy = new Promise(function (success, nosuccess) {
 
-            let path;
+
             childPython.stdout.on('data', (data) => {
 
 
 
-                path = data.toString()
+
                 success(data);
 
             })
 
             childPython.stderr.on('data', (data) => {
-                console.log("error")
                 nosuccess(data);
             });
 

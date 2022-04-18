@@ -114,9 +114,8 @@ class FifteenAPI:
             #self.logger.info(f"File saved: {filename}")
             return {"status": tts["status"], "filename": filename}
 
-        # else:
-            # print("UEUEUEUEUEUE")
-            # return {"status": tts["status"], "filename": None}
+        else:
+            return {"status": tts["status"], "filename": None}
 
 
 if __name__ == "__main__":
