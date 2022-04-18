@@ -86,7 +86,7 @@ module.exports = {
             })
 
             childPython.stderr.on('data', (data) => {
-                console.log("ERRPR: ", data.toString())
+                console.log("error")
                 nosuccess(data);
             });
 
