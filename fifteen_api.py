@@ -120,7 +120,7 @@ class FifteenAPI:
 
 if __name__ == "__main__":
     fifteen = FifteenAPI(show_debug=True)
-
+    print("Ja")
     character = str(sys.argv[1])
     path = str(sys.argv[2])
     text = str(sys.argv[3])
