@@ -39,7 +39,7 @@ class FifteenAPI:
             self.logger.setLevel(logging.DEBUG)
         else:
             self.logger.setLevel(logging.WARNING)
-        self.logger.info("FifteenAPI initialization")
+        #self.logger.info("FifteenAPI initialization")
 
     def get_tts_raw(self, character, text):
 
@@ -57,13 +57,13 @@ class FifteenAPI:
             else:
                 text = text[:-1] + '.'
 
-        self.logger.info(f'Target text: [{text}]')
-        self.logger.info(f'Character: [{character}]')
+        #self.logger.info(f'Target text: [{text}]')
+        #self.logger.info(f'Character: [{character}]')
 
         data = json.dumps(
             {"text": text, "character": character, "emotion": "Contextual"})
 
-        self.logger.info('Waiting for 15.ai response...')
+        #self.logger.info('Waiting for 15.ai response...')
 
         try:
             response = pip._vendor.requests.post(
@@ -83,7 +83,7 @@ class FifteenAPI:
                     self.audio_url+resp["audio_uri"], headers=self.tts_headers)
                 resp["status"] = "OK"
                 resp["data"] = responseAudio.content
-                self.logger.info(f"15.ai API response success")
+                #self.logger.info(f"15.ai API response success")
                 return resp
             except pip._vendor.requests.exceptions.ConnectionError as e:
                 resp["status"] = f"ConnectionError ({e})"
@@ -107,10 +107,11 @@ class FifteenAPI:
                 filename = f"15ai-{char_filename_part}-{text_filename_part}-{round(time.time())}.wav"
             if not filename.endswith(".wav"):
                 filename += ".wav"
+            #filename = "E:\Docs\\repos\Bot\commands\\fun\\sound_file.wav"
             f = open(filename, 'wb')
             f.write(tts["data"])
             f.close()
-            self.logger.info(f"File saved: {filename}")
+            #self.logger.info(f"File saved: {filename}")
             return {"status": tts["status"], "filename": filename}
 
         else:
@@ -121,13 +122,15 @@ if __name__ == "__main__":
     fifteen = FifteenAPI(show_debug=True)
 
     character = str(sys.argv[1])
-    text = str(sys.argv[2])
+    path = str(sys.argv[2])
+    text = str(sys.argv[3])
     # print(character)
     # print(text)
     # print("Processing...")
-    file = fifteen.save_to_file(character, text)
-
-    print(file['filename'])
+    file = fifteen.save_to_file(character, text, path)
+    filename = file['filename']
+    print(filename)
+    sys.stdout.flush()
     #input_str = None
     # while input_str != "quit":
     #     print("Input character (Case sensitive!):")
