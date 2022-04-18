@@ -99,7 +99,7 @@ class FifteenAPI:
         return resp
 
     def save_to_file(self, character, text, filename=None):
-        tts = self.get_tts_raw(character, text)
+        #tts = self.get_tts_raw(character, text)
         # if tts["status"] == "OK" and tts["data"] is not None:
         #    if filename is None:
         #        char_filename_part = "".join(
