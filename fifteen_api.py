@@ -129,7 +129,8 @@ if __name__ == "__main__":
     # print(character)
     # print(text)
     # print("Processing...")
-    file = fifteen.save_to_file(character, text, path)
+    file = "a"
+    #file = fifteen.save_to_file(character, text, path)
 
     print(file)
     sys.stdout.flush()
