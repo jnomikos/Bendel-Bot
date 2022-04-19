@@ -45,56 +45,56 @@ class FifteenAPI:
 
         resp = {"status": "NOT SET", "data": None}
 
-        # text_len = len(text)
-        # if text_len > self.max_text_len:
+        text_len = len(text)
+        if text_len > self.max_text_len:
         #    self.logger.warning(
         #        f'Text too long ({text_len} > {self.max_text_len}), trimming #to {self.max_text_len} symbols')
-        #    text = text[:self.max_text_len - 1]
+            text = text[:self.max_text_len - 1]
 
-        # if not text.endswith(".") and not text.endswith("!") and not text.endswith("?"):
-        #    if len(text) < 140:
-        #       text += '.'
-        #    else:
-        #        text = text[:-1] + '.'
+         if not text.endswith(".") and not text.endswith("!") and not text.endswith("?"):
+            if len(text) < 140:
+               text += '.'
+            else:
+                text = text[:-1] + '.'
 
         # self.logger.info(f'Target text: [{text}]')
         # self.logger.info(f'Character: [{character}]')
 
-        # data = json.dumps(
-        #    {"text": text, "character": character, "emotion": "Contextual"})
+        data = json.dumps(
+            {"text": text, "character": character, "emotion": "Contextual"})
 
         # self.logger.info('Waiting for 15.ai response...')
 
-        # try:
-        #    response = pip._vendor.requests.post(
-        #       self.tts_url, data=data, headers=self.tts_headers)
-        # except pip._vendor.requests.exceptions.ConnectionError as e:
-        #   resp["status"] = f"ConnectionError ({e})"
-        #   self.logger.error(f"ConnectionError ({e})")
-        #   return resp
+        try:
+            response = pip._vendor.requests.post(
+               self.tts_url, data=data, headers=self.tts_headers)
+        except pip._vendor.requests.exceptions.ConnectionError as e:
+           resp["status"] = f"ConnectionError ({e})"
+           self.logger.error(f"ConnectionError ({e})")
+           return resp
 
-        # if response.status_code == 200:
+        if response.status_code == 200:
 
-        #   resp["response"] = response.json()
-        #   resp["audio_uri"] = resp["response"]["wavNames"][0]
+            resp["response"] = response.json()
+            resp["audio_uri"] = resp["response"]["wavNames"][0]
 
-        #   try:
-        #       responseAudio = pip._vendor.requests.get(
-        #           self.audio_url+resp["audio_uri"], headers=self.tts_headers)
-        #       resp["status"] = "OK"
-        #        resp["data"] = responseAudio.content
+            try:
+                responseAudio = pip._vendor.requests.get(
+                   self.audio_url+resp["audio_uri"], headers=self.tts_headers)
+                resp["status"] = "OK"
+                resp["data"] = responseAudio.content
         # self.logger.info(f"15.ai API response success")
-        #        return resp
-        #    except pip._vendor.requests.exceptions.ConnectionError as e:
-        #        resp["status"] = f"ConnectionError ({e})"
+                return resp
+            except pip._vendor.requests.exceptions.ConnectionError as e:
+                resp["status"] = f"ConnectionError ({e})"
         #        self.logger.error(f"ConnectionError ({e})")
-        #        return resp
+                return resp
 
-        # else:
+        else:
         #    self.logger.error(
         #        f'15.ai API request error, Status code: {response.status_code}#')
-        #    resp["status"] = f'15.ai API request error, Status code: {response.#status_code}'
-        # return resp
+            resp["status"] = "fail"
+            return resp
 
     def save_to_file(self, character, text, filename=None):
         tts = self.get_tts_raw(character, text)
@@ -102,7 +102,7 @@ class FifteenAPI:
             f = open(filename, 'wb')
             f.write(tts["data"])
             f.close()
-            #self.logger.info(f"File saved: {filename}")
+            # self.logger.info(f"File saved: {filename}")
             return {"status": tts["status"], "filename": filename}
         else:
             return {"status": "j", "filename": None}
