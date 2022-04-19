@@ -99,9 +99,9 @@ class FifteenAPI:
     def save_to_file(self, character, text, filename=None):
         tts = self.get_tts_raw(character, text)
         if tts["status"] == "OK" and tts["data"] is not None:
-            # if filename is None:
-            #    char_filename_part = "".join(
-            #        x for x in character[:10] if x.isalnum())
+            if filename is None:
+                char_filename_part = "".join(
+                    x for x in character[:10] if x.isalnum())
             #    text_filename_part = "".join(
             #        x for x in text[:16] if x.isalnum())
             #    filename = f"15ai-{char_filename_part}-{text_filename_part}-#{round(time.time())}.wav"
