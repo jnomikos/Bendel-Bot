@@ -119,7 +119,6 @@ if __name__ == "__main__":
     file = fifteen.save_to_file(character, text, path)
     filename = file['filename']
     print(filename)
-    sys.stdout.flush()
     # input_str = None
     # while input_str != "quit":
     #     print("Input character (Case sensitive!):")
