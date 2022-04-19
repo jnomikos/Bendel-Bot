@@ -3,11 +3,11 @@ import re
 import time
 import json
 import logging
-import requests
+import pip._vendor.requests
 import pathlib
 
 # import requests
-from requests.exceptions import ConnectionError
+from pip._vendor.requests.exceptions import ConnectionError
 
 
 class FifteenAPI:
@@ -66,9 +66,9 @@ class FifteenAPI:
         # self.logger.info('Waiting for 15.ai response...')
 
         try:
-            response = requests.post(
+            response = pip._vendor.requests.post(
                 self.tts_url, data=data, headers=self.tts_headers)
-        except requests.exceptions.ConnectionError as e:
+        except pip._vendor.requests.exceptions.ConnectionError as e:
             resp["status"] = "Connection Error"
             return resp
 
@@ -78,7 +78,7 @@ class FifteenAPI:
             resp["audio_uri"] = resp["response"]["wavNames"][0]
 
             # try:
-            responseAudio = requests.get(
+            responseAudio = pip._vendor.requests.get(
                 self.audio_url+resp["audio_uri"], headers=self.tts_headers)
             resp["status"] = "OK"
             resp["data"] = responseAudio.content
