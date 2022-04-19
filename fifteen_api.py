@@ -104,7 +104,7 @@ class FifteenAPI:
                     x for x in character[:10] if x.isalnum())
                 text_filename_part = "".join(
                     x for x in text[:16] if x.isalnum())
-                filename = f"15ai-{char_filename_part}-{text_filename_part}-#{round(time.time())}.wav"
+                # filename = f"15ai-{char_filename_part}-{text_filename_part}-#{round(time.time())}.wav"
             # if not filename.endswith(".wav"):
             #    filename += ".wav"
             # filename = "E:\Docs\\repos\Bot\commands\\fun\\sound_file.wav"
