@@ -105,15 +105,14 @@ class FifteenAPI:
                 text_filename_part = "".join(
                     x for x in text[:16] if x.isalnum())
                 # filename = f"15ai-{char_filename_part}-{text_filename_part}-#{round(time.time())}.wav"
-            # if not filename.endswith(".wav"):
-            #    filename += ".wav"
-            # filename = "E:\Docs\\repos\Bot\commands\\fun\\sound_file.wav"
-            #    f = open(filename, 'wb')
-            #    f.write(tts["data"])
-            #    f.close()
-            #   self.logger.info(f"File saved: {filename}")
-            #    return {"status": tts["status"], "filename": filename}
-            x = 5
+             if not filename.endswith(".wav"):
+                filename += ".wav"
+                filename = "E:\Docs\\repos\Bot\commands\\fun\\sound_file.wav"
+                f = open(filename, 'wb')
+                f.write(tts["data"])
+                f.close()
+                self.logger.info(f"File saved: {filename}")
+                return {"status": tts["status"], "filename": filename}
         else:
             return {"status": "j", "filename": None}
 
