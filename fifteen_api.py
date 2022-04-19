@@ -102,7 +102,7 @@ class FifteenAPI:
             f = open(filename, 'wb')
             f.write(tts["data"])
             f.close()
-            self.logger.info(f"File saved: {filename}")
+            #self.logger.info(f"File saved: {filename}")
             return {"status": tts["status"], "filename": filename}
         else:
             return {"status": "j", "filename": None}
