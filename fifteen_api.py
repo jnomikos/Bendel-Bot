@@ -3,9 +3,11 @@ import re
 import time
 import json
 import logging
-import requests
-from requests.exceptions import ConnectionError
+import pip._vendor.requests
 import pathlib
+
+# import requests
+from pip._vendor.requests.exceptions import ConnectionError
 
 
 class FifteenAPI:
@@ -37,7 +39,7 @@ class FifteenAPI:
             self.logger.setLevel(logging.DEBUG)
         else:
             self.logger.setLevel(logging.WARNING)
-        #self.logger.info("FifteenAPI initialization")
+        # self.logger.info("FifteenAPI initialization")
 
     def get_tts_raw(self, character, text):
 
@@ -55,18 +57,18 @@ class FifteenAPI:
             else:
                 text = text[:-1] + '.'
 
-        #self.logger.info(f'Target text: [{text}]')
-        #self.logger.info(f'Character: [{character}]')
+        # self.logger.info(f'Target text: [{text}]')
+        # self.logger.info(f'Character: [{character}]')
 
         data = json.dumps(
             {"text": text, "character": character, "emotion": "Contextual"})
 
-        #self.logger.info('Waiting for 15.ai response...')
+        # self.logger.info('Waiting for 15.ai response...')
 
         try:
-            response = requests.post(
+            response = pip._vendor.requests.post(
                 self.tts_url, data=data, headers=self.tts_headers)
-        except requests.exceptions.ConnectionError as e:
+        except pip._vendor.requests.exceptions.ConnectionError as e:
             resp["status"] = f"ConnectionError ({e})"
             self.logger.error(f"ConnectionError ({e})")
             return resp
@@ -77,13 +79,13 @@ class FifteenAPI:
             resp["audio_uri"] = resp["response"]["wavNames"][0]
 
             try:
-                responseAudio = requests.get(
+                responseAudio = pip._vendor.requests.get(
                     self.audio_url+resp["audio_uri"], headers=self.tts_headers)
                 resp["status"] = "OK"
                 resp["data"] = responseAudio.content
-                #self.logger.info(f"15.ai API response success")
+                # self.logger.info(f"15.ai API response success")
                 return resp
-            except requests.exceptions.ConnectionError as e:
+            except pip._vendor.requests.exceptions.ConnectionError as e:
                 resp["status"] = f"ConnectionError ({e})"
                 self.logger.error(f"ConnectionError ({e})")
                 return resp
@@ -96,24 +98,21 @@ class FifteenAPI:
 
     def save_to_file(self, character, text, filename=None):
         tts = self.get_tts_raw(character, text)
-        if tts["status"] == "OK" and tts["data"] is not None:
-            if filename is None:
-                char_filename_part = "".join(
-                    x for x in character[:10] if x.isalnum())
-                text_filename_part = "".join(
-                    x for x in text[:16] if x.isalnum())
-                filename = f"15ai-{char_filename_part}-{text_filename_part}-{round(time.time())}.wav"
-            if not filename.endswith(".wav"):
-                filename += ".wav"
-            #filename = "E:\Docs\\repos\Bot\commands\\fun\\sound_file.wav"
-            f = open(filename, 'wb')
-            f.write(tts["data"])
-            f.close()
-            self.logger.info(f"File saved: {filename}")
-            return {"status": tts["status"], "filename": filename}
 
-        else:
-            return {"status": tts["status"], "filename": None}
+        if filename is None:
+            char_filename_part = "".join(
+                x for x in character[:10] if x.isalnum())
+            text_filename_part = "".join(
+                x for x in text[:16] if x.isalnum())
+            filename = f"15ai-{char_filename_part}-{text_filename_part}-{round(time.time())}.wav"
+        if not filename.endswith(".wav"):
+            filename += ".wav"
+        # filename = "E:\Docs\\repos\Bot\commands\\fun\\sound_file.wav"
+        f = open(filename, 'wb')
+        f.write(tts["data"])
+        f.close()
+        self.logger.info(f"File saved: {filename}")
+        return {"status": tts["status"], "filename": filename}
 
 
 if __name__ == "__main__":
@@ -129,7 +128,7 @@ if __name__ == "__main__":
     filename = file['filename']
     print(filename)
     sys.stdout.flush()
-    #input_str = None
+    # input_str = None
     # while input_str != "quit":
     #     print("Input character (Case sensitive!):")
     #    character = input()
