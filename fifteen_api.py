@@ -69,8 +69,7 @@ class FifteenAPI:
             response = pip._vendor.requests.post(
                 self.tts_url, data=data, headers=self.tts_headers)
         except pip._vendor.requests.exceptions.ConnectionError as e:
-            resp["status"] = f"ConnectionError ({e})"
-            self.logger.error(f"ConnectionError ({e})")
+            resp["status"] = "Connection Error"
             return resp
 
         if response.status_code == 200:
