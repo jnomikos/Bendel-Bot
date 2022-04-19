@@ -6,7 +6,7 @@ import logging
 import pip._vendor.requests
 import pathlib
 
-#import requests
+# import requests
 from pip._vendor.requests.exceptions import ConnectionError
 
 
@@ -39,13 +39,13 @@ class FifteenAPI:
             self.logger.setLevel(logging.DEBUG)
         else:
             self.logger.setLevel(logging.WARNING)
-        #self.logger.info("FifteenAPI initialization")
+        # self.logger.info("FifteenAPI initialization")
 
     def get_tts_raw(self, character, text):
 
         resp = {"status": "NOT SET", "data": None}
 
-        #text_len = len(text)
+        # text_len = len(text)
         # if text_len > self.max_text_len:
         #    self.logger.warning(
         #        f'Text too long ({text_len} > {self.max_text_len}), trimming #to {self.max_text_len} symbols')
@@ -57,13 +57,13 @@ class FifteenAPI:
         #    else:
         #        text = text[:-1] + '.'
 
-        #self.logger.info(f'Target text: [{text}]')
-        #self.logger.info(f'Character: [{character}]')
+        # self.logger.info(f'Target text: [{text}]')
+        # self.logger.info(f'Character: [{character}]')
 
         # data = json.dumps(
         #    {"text": text, "character": character, "emotion": "Contextual"})
 
-        #self.logger.info('Waiting for 15.ai response...')
+        # self.logger.info('Waiting for 15.ai response...')
 
         # try:
         #    response = pip._vendor.requests.post(
@@ -83,7 +83,7 @@ class FifteenAPI:
         #           self.audio_url+resp["audio_uri"], headers=self.tts_headers)
         #       resp["status"] = "OK"
         #        resp["data"] = responseAudio.content
-        #self.logger.info(f"15.ai API response success")
+        # self.logger.info(f"15.ai API response success")
         #        return resp
         #    except pip._vendor.requests.exceptions.ConnectionError as e:
         #        resp["status"] = f"ConnectionError ({e})"
@@ -99,20 +99,20 @@ class FifteenAPI:
     def save_to_file(self, character, text, filename=None):
         tts = self.get_tts_raw(character, text)
         if tts["status"] == "OK" and tts["data"] is not None:
-           #     if filename is None:
-            #        char_filename_part = "".join(
-            #            x for x in character[:10] if x.isalnum())
-            #        text_filename_part = "".join(
-            #            x for x in text[:16] if x.isalnum())
-            #        filename = f"15ai-{char_filename_part}-{text_filename_part}-#{round(time.time())}.wav"
+            if filename is None:
+                char_filename_part = "".join(
+                    x for x in character[:10] if x.isalnum())
+                text_filename_part = "".join(
+                    x for x in text[:16] if x.isalnum())
+                filename = f"15ai-{char_filename_part}-{text_filename_part}-#{round(time.time())}.wav"
             if not filename.endswith(".wav"):
                 filename += ".wav"
-            #   #filename = "E:\Docs\\repos\Bot\commands\\fun\\sound_file.wav"
-            #   f = open(filename, 'wb')
-            #   f.write(tts["data"])
-            #   f.close()
-            #   self.logger.info(f"File saved: {filename}")
-            #   return {"status": tts["status"], "filename": filename}
+                # filename = "E:\Docs\\repos\Bot\commands\\fun\\sound_file.wav"
+                f = open(filename, 'wb')
+                f.write(tts["data"])
+                f.close()
+                self.logger.info(f"File saved: {filename}")
+                return {"status": tts["status"], "filename": filename}
 
         else:
             return {"status": "j", "filename": None}
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     filename = file['filename']
     print(filename)
     sys.stdout.flush()
-    #input_str = None
+    # input_str = None
     # while input_str != "quit":
     #     print("Input character (Case sensitive!):")
     #    character = input()
