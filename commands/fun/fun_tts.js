@@ -147,7 +147,7 @@ module.exports = {
         if (command.length < 2) {
             character = fix_entry(args[0]);
 
-            for (cur = 2; cur < args.length; cur++) {
+            for (cur = 1; cur < args.length; cur++) {
                 word += args[cur] + " "
             }
 
