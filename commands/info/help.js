@@ -104,7 +104,7 @@ module.exports = {
                 .addFields(
                     category.commands.map((cmd) => {
                         return {
-                            name: `\`${cmd.name} ${cmd.arguments}\``,
+                            name: `\`${cmd.name}\` ${cmd.arguments}`,
                             value: `${cmd.description}`,
                             inline: true
                         }
