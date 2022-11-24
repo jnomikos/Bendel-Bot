@@ -757,13 +757,17 @@ var song_now_playing = async function (client, message) {
     });
 
     const queueDestroyed = function queueDestroyed(queue) {
-        msg.delete();
+        if (msg) {
+            msg.delete();
+        }
         cmd_collector.stop();
         remove_event_listeners();
     }
     const queueEnd = function queueEnd(queue) {
         message.channel.send("The queue has ended 😭");
-        msg.delete();
+        if (msg) {
+            msg.delete();
+        }
         cmd_collector.stop();
         remove_event_listeners();
     }
@@ -796,7 +800,9 @@ var song_now_playing = async function (client, message) {
         }
         // Basically ensures that the buttons and embed shows up when the song is actually loaded to prevent errors
         song_playing_timeout(queue, client, message);
-        msg.delete();
+        if (msg) {
+            msg.delete();
+        }
 
         cmd_collector.stop();
         remove_event_listeners();
@@ -807,7 +813,9 @@ var song_now_playing = async function (client, message) {
         console.log(error);
         if (error === "Status code: 403") {
             console.log("403 time?");
-            msg.delete();
+            if (msg) {
+                msg.delete();
+            }
             cmd_collector.stop();
             remove_event_listeners();
         }
@@ -976,7 +984,9 @@ var song_now_playing = async function (client, message) {
             });
         } else if (i.customId === '1_stop') {
             i_embed.setDescription(`Stopped the queue`).setTimestamp();
-            msg.delete();
+            if (msg) {
+                msg.delete();
+            }
             message.channel.send({
                 embeds: [i_embed]
             });
