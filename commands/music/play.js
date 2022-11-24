@@ -5,6 +5,8 @@ const ytsr = require('ytsr');
 const { client } = require("../..");
 const { Permissions } = require('discord.js');
 const guildSchema = require('../../database/schema/guild');
+const genius = require("genius-lyrics");
+const genius_client = new genius.Client(process.env.GENIUS_KEY);
 
 
 module.exports = {
@@ -1006,37 +1008,18 @@ var song_now_playing = async function (client, message) {
                 });
                 lyrics_toggled = false;
             } else {
-                let song_name = current_song.name || current_song.title;
+                let song_name = guildQueue.songs[0].name || guildQueue.songs[0].title;
+                let lyrics_embed = new MessageEmbed().setColor('RANDOM');
+                const firstSong = searches[0];
+                if (firstSong) {
+                    const lyrics = await firstSong.lyrics();
+                    console.log(firstSong);
+                    lyrics_embed.setTitle(firstSong.title).setAuthor(`${firstSong.artist.name}`, `${firstSong.artist.thumbnail}`, `${firstSong.url}`).setThumbnail(`${firstSong.image}`);
 
-                var song_info;
-                let lyric = "NOT FOUND";
-                var lyrics_found = false;
-                if (song_name.includes("-")) {
-                    song_info = song_name.split("-");
-
-                } else if (song_name.includes("–")) {
-                    song_info = song_name.split("–");
-                } else if (song_name.includes(":")) {
-                    song_info = song_name.split(":");
+                    lyrics_embed.setDescription(lyrics.length >= 4093 ? lyrics.substring(0, 4093) + '...' : lyrics); // Adds the lyrics to the embed
                 } else {
-                    song_info = song_name;
+                    lyrics_embed.setTitle("Lyrics Not Found...");
                 }
-
-
-                if (song_info[1].includes("(")) {
-                    song_info[1] = song_info[1].split("(")[0]
-                }
-
-
-                lyric = await lyrics(song_info[0], song_info[1]) || "NOT FOUND";
-                // artist variable declared above
-                let lyrics_embed = new MessageEmbed().setColor('RANDOM').setFooter(`Lyrics Requested by ${i.user.tag}`, i.user.displayAvatarURL());
-
-
-
-                //let lyric = await lyrics("Queen", "Bohemian Rhapsody") || "NOT FOUND";
-
-                lyrics_embed.setDescription(lyric.length >= 4093 ? lyric.substring(0, 4093) + '...' : lyric);
                 msg.edit({
                     embeds: [playing_now_embed(), lyrics_embed],
                     components: [action_r(), action_r2()]
