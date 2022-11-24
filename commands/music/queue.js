@@ -114,8 +114,8 @@ module.exports = {
 
                     },
                 )
-            //.setTimestamp()
-            //.setFooter("Page " + ((len / 5) + 1).toString() + "/" + Math.ceil(videos.length / 5).toString());
+                //.setTimestamp()
+                .setFooter(`${guildQueue.songs.length - 1} songs in queue`);
             return search_screen;
         }
 
