@@ -1008,8 +1008,9 @@ var song_now_playing = async function (client, message) {
                 });
                 lyrics_toggled = false;
             } else {
-                let song_name = guildQueue.songs[0].name || guildQueue.songs[0].title;
                 let lyrics_embed = new MessageEmbed().setColor('RANDOM');
+
+                const searches = await genius_client.songs.search(guildQueue.songs[0].name);
                 const firstSong = searches[0];
                 if (firstSong) {
                     const lyrics = await firstSong.lyrics();
