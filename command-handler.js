@@ -8,6 +8,7 @@ const guildSchema = require('./database/schema/guild');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const { MessageActionRow, MessageSelectMenu } = require('discord.js');
+let prevention = require('./spam-prevention')
 
 
 
@@ -203,7 +204,11 @@ module.exports = async (client) => {
 
 
         try {
-            command.execute(client, message, args);
+            if (await prevention.spam_prevention(message.guild.id) === false) {
+                message.reply("You are sending commands too fast");
+            } else {
+                command.execute(client, message, args);
+            }
 
         } catch (error) {
             console.log(error);
