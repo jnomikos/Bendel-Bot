@@ -27,11 +27,21 @@ module.exports = {
     async execute(client, message, args) {
 
         if (!message.guild.me.permissions.has(Permissions.FLAGS.CONNECT)) {
-            message.reply("I do not have permissions to connect to voice channels")
+            message.reply("I do not have permissions to connect to voice channels").catch(error => {
+                // Only log the error if it is not an Unknown Message error
+                if (error.code !== 10008) {
+                    console.error('Failed to reply to the message:', error);
+                }
+            });
             return;
         }
         if (!message.guild.me.permissions.has(Permissions.FLAGS.SPEAK)) {
-            message.reply("I cannot play music. I do not have speaking permissions");
+            message.reply("I cannot play music. I do not have speaking permissions").catch(error => {
+                // Only log the error if it is not an Unknown Message error
+                if (error.code !== 10008) {
+                    console.error('Failed to reply to the message:', error);
+                }
+            });
 
             return;
         }
@@ -42,32 +52,20 @@ module.exports = {
         if (channel == null) {
             message.reply({
                 content: "You must be in a voice channel first!",
-            })
+            }).catch(error => {
+                // Only log the error if it is not an Unknown Message error
+                if (error.code !== 10008) {
+                    console.error('Failed to reply to the message:', error);
+                }
+            });
             return;
         }
         let guildQueue = client.player.getQueue(message.guild.id);
-        //if (args.toString().includes('https://')) {
-        command_queue_add(client, guildQueue, message, args);
-        //} else {
-        //    play_music(client, guildQueue, message, args);
-        //}
+        play_music(client, guildQueue, message, args);
 
     }, song_playing_timeout
 
 }
-
-let old_queue = [];
-/*client.player.on('songChanged', async (queue, newSong, oldSong) => {
-    console.log(queue.guild.id)
-    guildData = await guildSchema.findOne({ guildID: queue.guild.id });
-    if (oldSong.url || queue.getRepeatMode() != 1) { // youtube
-        //    song = song.url;
-        await guildSchema.updateOne({ guildID: queue.guild.id, $push: { song_history: oldSong.url } })
-    } else if (oldSong.uri || queue.getRepeatMode() != 1) { // soundcloud
-        await guildSchema.updateOne({ guildID: queue.guild.id, $push: { song_history: oldSong.uri } })
-    }
-
-});*/
 
 client.player.on('queueDestroyed', async (queue) => {
     //guildData = await guildSchema.collection.findOne({ guildID: queue.guild.id });
@@ -95,9 +93,6 @@ client.player.on('clientDisconnect', async (queue) => {
     };
     const result = await guildSchema.updateOne(query, updateDocument);
 });
-client.player.on('channelEmpty', (queue) => {
-    old_queue = [];
-});
 
 client.player.on('queueAdded', (queue, song, message) => {
     console.log("Song added to queue of ", queue.size)
@@ -121,10 +116,9 @@ client.player.on('queueAdded', (queue, song, message) => {
     }
 });
 
-var cmd_queue = [];
 
-client.player.on('songLoaded', (message, queue, loaded) => {
-    if (queue && queue.songs.length > 0 && loaded === true) {
+client.player.on('songLoaded', (message, queue) => {
+    if (queue && queue.songs.length > 0) {
         //if (message.content.includes("https://")) {
 
         if (!message.content.includes("&list=") && !message.content.includes("playlist") && !message.content.includes("/sets/")) {
@@ -132,35 +126,8 @@ client.player.on('songLoaded', (message, queue, loaded) => {
             client.player.emit('queueAdded', queue, queue.songs[queue.songs.length - 1], message)
 
         }
-        //} else {
-        //  client.player.emit('queueAdded', queue, queue.songs[queue.songs.length - 1], message)
-        //}
-
-
-    }
-    cmd_queue.shift();
-    if (cmd_queue.length > 0) {
-        play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
     }
 });
-
-function command_queue_add(client, guildQueue, message, args) {
-
-    var cmd = [client, guildQueue, message, args]
-    cmd_queue.push(cmd);
-    if (cmd_queue.length === 1) {
-        play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3]);
-    }
-    console.log(cmd_queue.length)
-
-    client.player.once('newSearch', () => {
-        cmd_queue.shift();
-        if (cmd_queue.length > 0) {
-            play_music(cmd_queue[0][0], cmd_queue[0][1], cmd_queue[0][2], cmd_queue[0][3])
-        }
-    })
-
-}
 
 
 
@@ -188,6 +155,76 @@ async function song_playing_timeout(queue, client, message) {
     }, 100);
 }
 
+function search_action_row_1(videos, len) {
+    const r1 = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_1')
+                .setLabel('1')
+                //.setEmoji('1️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len] === undefined)
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_2')
+                .setLabel('2')
+                // .setEmoji('2️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 1] === undefined)
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_3')
+                .setLabel('3')
+                // .setEmoji('3️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 2] === undefined)
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_4')
+                .setLabel('4')
+                // .setEmoji('4️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 3] === undefined)
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_5')
+                .setLabel('5')
+                // .setEmoji('5️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 4] === undefined)
+        )
+    return r1;
+}
+function search_action_row_2(videos, len) {
+    const r2 = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_back')
+                //.setLabel('<')
+                .setEmoji('⬅️')
+                .setStyle('PRIMARY')
+                .setDisabled(len === 0)
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_forward')
+                //.setLabel('2')
+                .setEmoji('➡️')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 5] === undefined)
+        )
+    return r2;
+}
+
 async function play_music(client, guildQueue, message, args) {
     var isInteraction;
     if (message.user) {
@@ -212,615 +249,539 @@ async function play_music(client, guildQueue, message, args) {
         return;
     }
 
-    /*
-    P's promise is that a song is chosen. If so, it will display song chosen message
-    */
-    let song_chosen = new Promise(async function (resolve) {
-        const ht = args.toString();
+    const ht = args.toString();
 
-        if (ht.substr(0, 8) === "https://") { // is a link
-            let hasMusic = false;
-            if (queue.songs.length > 0) {
-                hasMusic = true;
-            }
-            if (ht.includes("&list=") || ht.includes("playlist") || ht.includes("/sets/")) { // checks if link is a playlist
-                let isFirst = queue.songs.length === 0;
-                // direct integration from soundcloud
-                let load_msg = undefined;
-                if (ht.includes("open.spotify.com")) {
-                    load_msg = await message.reply(`\`Loading songs from spotify playlist. This may take a while...\``);
-                } else {
-                    load_msg = await message.reply(`\`Loading songs from the playlist. This may take a while...\``);
-                }
-
-                const playlistAdd = function playlistAdd(queue, playlist) {
-                    message.channel.send(`\`Playlist ${playlist} with ${playlist.songs.length} videos was added to the queue.\``);
-                }
-
-                client.player.once('playlistAdd', playlistAdd);
-                var worked = true;
-                let song = await queue.playlist(args.join(' ')).then(_ => {
-                    if (load_msg != undefined) {
-                        load_msg.delete();
+    if (ht.substr(0, 8) === "https://") { // is a link
+        let hasMusic = false;
+        if (queue.songs.length > 0) {
+            hasMusic = true;
+        }
+        if (ht.includes("&list=") || ht.includes("playlist") || ht.includes("/sets/")) { // checks if link is a playlist
+            let isFirst = queue.songs.length === 0;
+            // direct integration from soundcloud
+            let load_msg = undefined;
+            if (ht.includes("open.spotify.com")) {
+                load_msg = await message.reply(`\`Loading songs from spotify playlist. This may take a while...\``).catch(error => {
+                    // Only log the error if it is not an Unknown Message error
+                    if (error.code !== 10008) {
+                        console.error('Failed to reply to the message:', error);
                     }
-
-                }).catch(error => {
-                    if (!guildQueue || !guildQueue.songs[0])
-                        queue.stop();
-
-                    client.player.removeListener('playlistAdd', playlistAdd);
-                    //Promise.reject(error);
-                    //song_chosen = false; // failure
-                    // return;
-
-                    worked = false;
                 });
-
-                client.player.emit("songLoaded", message, guildQueue, worked);
-
-
-                if (isFirst && worked === true) {
-                    song_playing_timeout(queue, client, message);
-                    //song_now_playing(client, message)
-                }
-                //if (isFirst && (song.songs !== undefined))
-                //    song_now_playing(client, message)
-                //else { song_now_playing(client, message) }
-
-                //if (!hasMusic) {
-                //song_now_playing(message, song);
-                //}
-
-            } else { // Else; if the message sent is not a playlist
-                let worked = true;
-
-
-                let song = await queue.play(args.join(' ')).then(_ => {
-                    resolve();
-                    if (queue.songs.length === 1) {
-                        song_playing_timeout(queue, client, message);
-                    }
-                }).catch(_ => {
-                    worked = false;
-                    if (!guildQueue) {
-                        queue.stop();
-                        console.log("Guild queue stopped");
-                    }
-                    //song_chosen = false; // failure
-                    return;
-                });
-                client.player.emit("songLoaded", message, guildQueue, worked);
-
-
-            }
-
-
-        } else {
-            console.log("👀 Searching..."); // TODO: tell user of it searching
-            const searchingMsg = await message.reply({
-                content: "👀 Searching..."
-            })
-
-            // filters to only search for videos!!!
-            const filters1 = await ytsr.getFilters(args.join(" "));
-            const filter1 = filters1.get('Type').get('Video');
-
-            if (!filter1.url) {
-                client.player.emit("songLoaded", message, guildQueue, false);
-                return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
-            }
-
-            const r = await ytsr(filter1.url, { limit: 10 })
-
-
-            const videos = r.items;
-            let userId;
-            if (isInteraction === true) {
-                userId = message.user.id;
             } else {
-                userId = message.member.id;
+                load_msg = await message.reply(`\`Loading songs from the playlist. This may take a while...\``).catch(error => {
+                    // Only log the error if it is not an Unknown Message error
+                    if (error.code !== 10008) {
+                        console.error('Failed to reply to the message:', error);
+                    }
+                });
             }
-            const filter = i => { // Filter for message component collector for buttons. Put it up here so it can be used in multiple areas
-                return (userId === i.user.id) && i !== undefined && i.customId.substr(0, 6) === 'choice';
+
+            const playlistAdd = function playlistAdd(queue, playlist) {
+                message.channel.send(`\`Playlist ${playlist} with ${playlist.songs.length} videos was added to the queue.\``);
             }
-            const coll = message.channel.createMessageComponentCollector({ filter, time: 15 * 1000 });
-            if (!isInteraction) {
-                if (!searchingMsg.deleted) {
-                    searchingMsg.delete();
+
+            client.player.once('playlistAdd', playlistAdd);
+            let song = await queue.playlist(args.join(' ')).then(_ => {
+                if (load_msg != undefined) {
+                    load_msg.delete().catch(error => {
+                        // Only log the error if it is not an Unknown Message error
+                        if (error.code !== 10008) {
+                            console.error('Failed to delete the message:', error);
+                        }
+                    });
                 }
-            }
-            // If no videos were found from the search
-            if (!videos.length) {
 
-                client.player.emit("songLoaded", message, guildQueue, false);
-                return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
+            }).catch(error => {
+                if (!guildQueue || !current_song)
+                    queue.stop();
 
-            }
+                client.player.removeListener('playlistAdd', playlistAdd);
+                //Promise.reject(error);
+                //song_chosen = false; // failure
+                // return;
+            });
 
-
-
-            var len = 0;
-            function search_screen_embed(len) {
-                search_screen = new MessageEmbed()
-                    .setColor('#c5e2ed')
-                    .setTitle(`Showing results for: ${args.join(" ")}`)
-                    //.setThumbnail('https://c.tenor.com/NjavXXAMRD8AAAAC/sound.gif')
-                    .setDescription("Type the number of what you want to play:")
-
-                    .addFields(
-                        {
-                            name: videos[len] != undefined ? `:one: ${videos[len].title}` : '\u200B',
-
-                            value: videos[len] != undefined ? `Author: ${videos[len].author.name}, Duration: [${videos[0].duration}]` : '\u200B',
+            client.player.emit("songLoaded", message, guildQueue);
 
 
-                        },
-                        {
-                            name: videos[len + 1] != undefined ? `:two: ${videos[len + 1].title}` : '\u200B',
-
-                            value: videos[len + 1] != undefined ? `Author: ${videos[len + 1].author.name}, Duration: [${videos[len + 1].duration}]` : '\u200B',
-
-                        },
-                        {
-                            name: videos[len + 2] != undefined ? `:three: ${videos[len + 2].title}` : '\u200B',
-
-                            value: videos[len + 2] != undefined ? `Author: ${videos[len + 2].author.name}, Duration: [${videos[len + 2].duration}]` : '\u200B',
-
-                        },
-                        {
-                            name: videos[len + 3] != undefined ? `:four: ${videos[len + 3].title}` : '\u200B',
-
-                            value: videos[len + 3] != undefined ? `Author: ${videos[len + 3].author.name}, Duration: [${videos[len + 3].duration}]` : '\u200B',
-
-                        },
-                        {
-                            name: videos[len + 4] != undefined ? `:five: ${videos[len + 4].title}` : '\u200B',
-
-                            value: videos[len + 4] != undefined ? `Author: ${videos[len + 4].author.name}, Duration: [${videos[len + 4].duration}]` : '\u200B',
-
-                        },
-                    )
-                    //.setTimestamp()
-                    .setFooter("Page " + ((len / 5) + 1).toString() + "/" + Math.ceil(videos.length / 5).toString());
-                return search_screen;
+            if (isFirst) {
+                song_playing_timeout(queue, client, message);
             }
 
+        } else { // Else; if the message sent is not a playlist
 
-            function row1(len) {
-                const r1 = new MessageActionRow()
-                    .addComponents(
-                        new MessageButton()
-                            .setCustomId('choice_1')
-                            .setLabel('1')
-                            //.setEmoji('1️⃣')
-                            .setStyle('PRIMARY')
-                            .setDisabled(videos[len] === undefined)
-                    )
 
-                    .addComponents(
-                        new MessageButton()
-                            .setCustomId('choice_2')
-                            .setLabel('2')
-                            // .setEmoji('2️⃣')
-                            .setStyle('PRIMARY')
-                            .setDisabled(videos[len + 1] === undefined)
-                    )
+            let song = await queue.play(args.join(' ')).then(_ => {
+                if (queue.songs.length === 1) {
+                    song_playing_timeout(queue, client, message);
+                }
+            }).catch(_ => {
+                if (!guildQueue) {
+                    queue.stop();
+                    console.log("Guild queue stopped");
+                }
+                //song_chosen = false; // failure
+                return;
+            });
+            client.player.emit("songLoaded", message, guildQueue);
 
-                    .addComponents(
-                        new MessageButton()
-                            .setCustomId('choice_3')
-                            .setLabel('3')
-                            // .setEmoji('3️⃣')
-                            .setStyle('PRIMARY')
-                            .setDisabled(videos[len + 2] === undefined)
-                    )
 
-                    .addComponents(
-                        new MessageButton()
-                            .setCustomId('choice_4')
-                            .setLabel('4')
-                            // .setEmoji('4️⃣')
-                            .setStyle('PRIMARY')
-                            .setDisabled(videos[len + 3] === undefined)
-                    )
+        }
 
-                    .addComponents(
-                        new MessageButton()
-                            .setCustomId('choice_5')
-                            .setLabel('5')
-                            // .setEmoji('5️⃣')
-                            .setStyle('PRIMARY')
-                            .setDisabled(videos[len + 4] === undefined)
-                    )
-                return r1;
+
+    } else {
+        console.log("👀 Searching..."); // TODO: tell user of it searching
+        const searchingMsg = await message.reply({
+            content: "👀 Searching..."
+        }).catch(error => {
+            // Only log the error if it is not an Unknown Message error
+            if (error.code !== 10008) {
+                console.error('Failed to reply to the message:', error);
             }
-            function row2(len) {
-                const r2 = new MessageActionRow()
-                    .addComponents(
-                        new MessageButton()
-                            .setCustomId('choice_back')
-                            //.setLabel('<')
-                            .setEmoji('⬅️')
-                            .setStyle('PRIMARY')
-                            .setDisabled(len === 0)
-                    )
+        });
 
-                    .addComponents(
-                        new MessageButton()
-                            .setCustomId('choice_forward')
-                            //.setLabel('2')
-                            .setEmoji('➡️')
-                            .setStyle('PRIMARY')
-                            .setDisabled(videos[len + 5] === undefined)
-                    )
-                return r2;
+        // filters to only search for videos!!!
+        const filters1 = await ytsr.getFilters(args.join(" "));
+        const filter1 = filters1.get('Type').get('Video');
+
+        if (!filter1.url) {
+            return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
+        }
+
+        const r = await ytsr(filter1.url, { limit: 10 })
+
+
+        const videos = r.items;
+        let userId;
+        if (isInteraction === true) {
+            userId = message.user.id;
+        } else {
+            userId = message.member.id;
+        }
+        const filter = i => { // Filter for message component collector for buttons. Put it up here so it can be used in multiple areas
+            return (userId === i.user.id) && i !== undefined && i.customId.substr(0, 6) === 'choice';
+        }
+        const coll = message.channel.createMessageComponentCollector({ filter, time: 15 * 1000 });
+        if (!isInteraction) {
+            if (!searchingMsg.deleted) {
+                searchingMsg.delete().catch(error => {
+                    // Only log the error if it is not an Unknown Message error
+                    if (error.code !== 10008) {
+                        console.error('Failed to delete the message:', error);
+                    }
+                });
             }
-            search = search_screen_embed(len);
-            const r1 = row1(len);
-            const r2 = row2(len);
-            var msgRef;
+        }
+        // If no videos were found from the search
+        if (!videos.length) {
 
-            const newSearch = function newSearch() {
-                coll.stop();
-                if (msgRef)
-                    msgRef.delete();
+            client.player.emit("songLoaded", message, guildQueue, false);
+            return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
+
+        }
+
+        var len = 0;
+        function search_screen_embed(len) {
+            search_screen = new MessageEmbed()
+                .setColor('#c5e2ed')
+                .setTitle(`Showing results for: ${args.join(" ")}`)
+                //.setThumbnail('https://c.tenor.com/NjavXXAMRD8AAAAC/sound.gif')
+                .setDescription("Type the number of what you want to play:")
+
+                .addFields(
+                    {
+                        name: videos[len] != undefined ? `:one: ${videos[len].title}` : '\u200B',
+
+                        value: videos[len] != undefined ? `Author: ${videos[len].author.name}, Duration: [${videos[0].duration}]` : '\u200B',
+
+
+                    },
+                    {
+                        name: videos[len + 1] != undefined ? `:two: ${videos[len + 1].title}` : '\u200B',
+
+                        value: videos[len + 1] != undefined ? `Author: ${videos[len + 1].author.name}, Duration: [${videos[len + 1].duration}]` : '\u200B',
+
+                    },
+                    {
+                        name: videos[len + 2] != undefined ? `:three: ${videos[len + 2].title}` : '\u200B',
+
+                        value: videos[len + 2] != undefined ? `Author: ${videos[len + 2].author.name}, Duration: [${videos[len + 2].duration}]` : '\u200B',
+
+                    },
+                    {
+                        name: videos[len + 3] != undefined ? `:four: ${videos[len + 3].title}` : '\u200B',
+
+                        value: videos[len + 3] != undefined ? `Author: ${videos[len + 3].author.name}, Duration: [${videos[len + 3].duration}]` : '\u200B',
+
+                    },
+                    {
+                        name: videos[len + 4] != undefined ? `:five: ${videos[len + 4].title}` : '\u200B',
+
+                        value: videos[len + 4] != undefined ? `Author: ${videos[len + 4].author.name}, Duration: [${videos[len + 4].duration}]` : '\u200B',
+
+                    },
+                )
+                //.setTimestamp()
+                .setFooter("Page " + ((len / 5) + 1).toString() + "/" + Math.ceil(videos.length / 5).toString());
+            return search_screen;
+        }
+
+        var msgRef; // Message reference
+
+        const newSearch = function newSearch() {
+            coll.stop();
+            msgRef.delete().catch(error => {
+                // Only log the error if it is not an Unknown Message error
+                if (error.code !== 10008) {
+                    console.error('Failed to delete the message:', error);
+                }
+            });;
+        }
+        client.player.emit('newSearch');
+        client.player.once('newSearch', newSearch);
+
+        msgRef = await message.reply({
+            embeds: [search_screen_embed(len)],
+            components: [search_action_row_1(videos, len), search_action_row_2(videos, len)],
+        }).catch(error => {
+            // Only log the error if it is not an Unknown Message error
+            if (error.code !== 10008) {
+                console.error('Failed to edit the reply:', error);
             }
-            client.player.emit('newSearch');
-            client.player.once('newSearch', newSearch);
+        });
 
-            try {
-                msgRef = await message.editReply({
-                    embeds: [search],
-                    components: [r1, r2],
-                })
-            } catch (error) {
-                try {
-                    msgRef = await message.reply({
-                        embeds: [search],
-                        components: [r1, r2],
-                    })
-                } catch (err) {
-                    console.log(err);
+
+        setTimeout(() => {
+            coll.stop();
+            msgRef.delete().catch(error => {
+                // Only log the error if it is not an Unknown Message error
+                if (error.code !== 10008) {
+                    console.error('Failed to delete the message:', error);
+                }
+            });;
+        }, 15 * 1000);
+
+        coll.on('collect', async i => {
+            await i.deferUpdate();
+            if (i.customId === 'choice_back') {
+                len -= 5;
+                i.editReply({ // loading reply
+                    content: "Hold on a second, adding the video...",
+                    embeds: [search_screen_embed(len)],
+                    components: [search_action_row_1(videos, len), search_action_row_2(videos, len)]
+                });
+            } else if (i.customId === 'choice_forward') {
+                len += 5;
+                i.editReply({ // loading reply
+                    content: "Hold on a second, adding the video...",
+                    embeds: [search_screen_embed(len)],
+                    components: [search_action_row_1(videos, len), search_action_row_2(videos, len)]
+                });
+            } else {
+
+                var choice;
+                if (i.customId === 'choice_1') {
+                    choice = 0;
+                } else if (i.customId === 'choice_2') {
+                    choice = 1;
+                } else if (i.customId === 'choice_3') {
+                    choice = 2;
+                } else if (i.customId === 'choice_4') {
+                    choice = 3;
+                } else if (i.customId === 'choice_5') {
+                    choice = 4;
+                } else {
                     return;
                 }
-            }
 
-            setTimeout(() => {
+                let msg = i.editReply({ // loading reply
+                    content: "<a:Loading:931258756644360272> Hold on a second, adding the video...",
+                    embeds: [],
+                    components: []
+                });
 
+                if (videos[choice + len] === undefined) {
+                    Promise.reject(new Error('fail')).then(console.error(error));
+                    console.error("Song chosen was undefined");
+                    return;
+                }
 
-                //client.player.emit('newSearch');
-                coll.stop();
-                if (!msgRef.deleted)
-                    msgRef.delete();
-            }, 15 * 1000);
+                let song = await queue.play(videos[choice + len].url).catch(_ => {
 
-            coll.on('collect', async i => {
-                await i.deferUpdate();
-                if (i.customId === 'choice_back') {
-                    len -= 5;
-                    i.editReply({ // loading reply
-                        content: "Hold on a second, adding the video...",
-                        embeds: [search_screen_embed(len)],
-                        components: [row1(len), row2(len)]
-                    });
-                } else if (i.customId === 'choice_forward') {
-                    len += 5;
-                    i.editReply({ // loading reply
-                        content: "Hold on a second, adding the video...",
-                        embeds: [search_screen_embed(len)],
-                        components: [row1(len), row2(len)]
-                    });
-                } else {
+                    const severe_error = new MessageEmbed()
+                        .setColor('#cc0000')
+                        .setTitle('Error')
+                        .setDescription('Video failed to add...')
+                        .setImage('https://imgpile.com/images/U2Lhgk.png')
 
-                    var choice;
-                    if (i.customId === 'choice_1') {
-                        choice = 0;
-                    } else if (i.customId === 'choice_2') {
-                        choice = 1;
-                    } else if (i.customId === 'choice_3') {
-                        choice = 2;
-                    } else if (i.customId === 'choice_4') {
-                        choice = 3;
-                    } else if (i.customId === 'choice_5') {
-                        choice = 4;
-                    } else {
-                        return;
-                    }
-
-                    let msg = i.editReply({ // loading reply
-                        content: "<a:Loading:931258756644360272> Hold on a second, adding the video...",
-                        embeds: [],
+                    //i.editReply({ // loading reply
+                    message.channel.send({
+                        content: "Video failed to add. Please try again... (If the problem continues with this video, it is likely youtube preventing it from downloading)",
+                        embeds: [severe_error],
                         components: []
                     });
-
-                    if (videos[choice + len] === undefined) {
-                        Promise.reject(new Error('fail')).then(console.error(error));
-                        console.error("Song chosen was undefined");
-                        return;
-                    }
-
-                    var worked = true;
-
-                    let song = await queue.play(videos[choice + len].url).catch(_ => {
-
-                        const severe_error = new MessageEmbed()
-                            .setColor('#cc0000')
-                            .setTitle('Error')
-                            .setDescription('Video failed to add...')
-                            .setImage('https://imgpile.com/images/U2Lhgk.png')
-
-                        //i.editReply({ // loading reply
-                        message.channel.send({
-                            content: "Video failed to add. Please try again... (If the problem continues with this video, it is likely youtube preventing it from downloading)",
-                            embeds: [severe_error],
-                            components: []
-                        });
-                        //if (!guildQueue) {
-                        //    queue.stop();
-                        //    console.log("Guild queue stopped");
-                        //}
-                        //Promise.reject(new Error('fail')).then(console.error(error));
-
-                        worked = false;
-                    });
-                    if (worked === true) {
-                        resolve();
-                        if (queue.songs.length === 1) {
-                            song_playing_timeout(queue, client, message)
-                        }
-                        msgRef.delete();
-                    }
-
-                    client.player.emit("songLoaded", message, guildQueue, worked);
-
-                    client.player.removeListener('newSearch', newSearch);
-                    coll.stop();
-
+                });
+                if (queue.songs.length === 1) {
+                    song_playing_timeout(queue, client, message)
                 }
-            });
-        }
-    });
+                msgRef.delete().catch(error => {
+                    // Only log the error if it is not an Unknown Message error
+                    if (error.code !== 10008) {
+                        console.error('Failed to delete the message:', error);
+                    }
+                });;
 
+
+                client.player.emit("songLoaded", message, guildQueue);
+
+                client.player.removeListener('newSearch', newSearch);
+                coll.stop();
+
+            }
+        });
+    }
+}
+
+function duration_converter(time) { // converts decimal to hh:mm:ss
+    var hour = time / 3600000;
+    var hour_remainder = Math.abs(hour) - Math.floor(hour);
+    hour = Math.trunc(hour);
+
+    var minute = hour_remainder * 60;
+    var minute_remainder = Math.abs(minute) - Math.floor(minute);
+    minute = Math.trunc(minute);
+
+    var second = minute_remainder * 60;
+    second = Math.trunc(second);
+
+
+    if (String(second).length < 2) {
+        second = '0' + second;
+    }
+
+    if (String(minute).length < 2) {
+        minute = '0' + minute;
+    }
+
+    if (String(hour).length < 2) {
+        hour = '0' + hour;
+    }
+
+    return (hour + ":" + minute + ":" + second);
+}
+
+function playing_now_embed(current_song) {
+    let artist;
+    var duration = '\u200B';
+    if (current_song.title) {
+        duration = duration_converter(current_song.duration);
+        if (!current_song.publisher_metadata) {
+            artist = current_song.user.username;
+        } else if (current_song.publisher_metadata) {
+            if (current_song.publisher_metadata.artist) {
+                artist = current_song.publisher_metadata.artist;
+            } else {
+                artist = "n/a"
+            }
+        } else {
+            artist = "n/a"
+        }
+    } else if (current_song.author) {
+        artist = current_song.author;
+        duration = current_song.duration;
+        if (String(duration).length === 5) {
+            duration = "00:" + duration;
+        } else if (String(duration).length === 2) {
+            duration = "00:00:" + duration;
+        }
+    } else {
+        artist = "n/a"
+    }
+
+    playing_now = new MessageEmbed()
+
+        .setColor('#c5e2ed')
+        .setTitle("Playing: ")
+        //.setDescription(`${current_song.name || current_song.title}`)
+        .addFields(
+            { name: current_song.name || current_song.title, value: artist },
+            //{ name: 'Author', value: current_song.author || current_song.publisher_metadata.artist || "none", inline: true },
+            { name: "▬▬▬▬▬▬▬▬▬▬▬▬▬ [ 00:00:00/" + duration + "]", value: '\u200B' },
+        )
+        .setImage(`${current_song.thumbnail || current_song.artwork_url}`)
+        .setTimestamp()
+    return playing_now;
+}
+
+function action_row_1(guildData = GD) {
+
+    const r = new MessageActionRow()
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('1_back')
+                .setEmoji('⏮')
+                .setStyle('SECONDARY')
+                .setDisabled(guildData.song_history[0] && guildQueue.getRepeatMode() === 0 ? false : true)
+
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('1_play-pause')
+                .setEmoji(guildQueue.paused === false ? '⏸' : '▶')
+                .setStyle(guildQueue.paused === true ? 'SUCCESS' : 'SECONDARY')
+
+
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('1_next')
+                .setEmoji('⏭')
+                .setStyle('SECONDARY')
+
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('1_loop')
+                .setEmoji(`🔁`)
+                .setStyle(guildQueue.getRepeatMode() === 1 ?
+                    'DANGER' : 'SECONDARY')
+
+        )
+
+    return r;
+}
+
+function action_row_2() {
+    const r2 = new MessageActionRow()
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('1_loop-songs')
+                .setEmoji('🔂')
+                .setStyle(guildQueue.getRepeatMode() === 2 ?
+                    'DANGER' : 'SECONDARY')
+
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('1_stop')
+                .setEmoji('⏹')
+                .setStyle('SECONDARY')
+
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('1_shuffle')
+                .setEmoji('🔀')
+                .setStyle('SECONDARY')
+
+        )
+
+    return r2;
+}
+
+// Handles when errors during song play
+const err = async function err(error, queue) {
+    console.log(`Error: ${error} in ${queue.guild.name} `);
+    console.log(error);
+    if (error === "Status code: 403") {
+        console.log("403 time?");
+
+        msg.delete().catch(error => {
+            // Only log the error if it is not an Unknown Message error
+            if (error.code !== 10008) {
+                console.error('Failed to delete the message:', error);
+            }
+        });
+
+        cmd_collector.stop();
+        remove_event_listeners();
+    }
 }
 
 
 var song_now_playing = async function (client, message) {
 
-
+    guildQueue = await client.player.getQueue(message.guild.id);
+    let current_song = guildQueue.songs[0];
     const filter = i => { // Filter for message component collector
         return i !== undefined && i.customId.substr(0, 2) === '1_';
     }
-    guildQueue = await client.player.getQueue(message.guild.id);
-    //const cmd_collector = message.channel.createMessageComponentCollector({ filter });
     const cmd_collector = message.channel.createMessageComponentCollector({ filter, time: 1000 * 7200 }); // 2 hours
-
-
-    function duration_converter(time) { // converts decimal to hh:mm:ss
-        var hour = time / 3600000;
-        var hour_remainder = Math.abs(hour) - Math.floor(hour);
-        hour = Math.trunc(hour);
-
-        var minute = hour_remainder * 60;
-        var minute_remainder = Math.abs(minute) - Math.floor(minute);
-        minute = Math.trunc(minute);
-
-        var second = minute_remainder * 60;
-        second = Math.trunc(second);
-
-
-        if (String(second).length < 2) {
-            second = '0' + second;
-        }
-
-        if (String(minute).length < 2) {
-            minute = '0' + minute;
-        }
-
-        if (String(hour).length < 2) {
-            hour = '0' + hour;
-        }
-
-        return (hour + ":" + minute + ":" + second);
-    }
 
     //duration_converter(songDuration);
     //const cmd_collector = message.channel.createMessageComponentCollector({ filter, time: 30 * 1000 });
     //console.log(guildQueue.length)
-    function playing_now_embed() {
-        let current_song = guildQueue.songs[0];
-        let artist;
-        var duration = '\u200B';
-        if (current_song.title) {
-            duration = duration_converter(current_song.duration);
-            if (!current_song.publisher_metadata) {
-                artist = current_song.user.username;
-            } else if (current_song.publisher_metadata) {
-                if (current_song.publisher_metadata.artist) {
-                    artist = current_song.publisher_metadata.artist;
-                } else {
-                    artist = "n/a"
-                }
-            } else {
-                artist = "n/a"
-            }
-        } else if (current_song.author) {
-            artist = current_song.author;
-            duration = current_song.duration;
-            if (String(duration).length === 5) {
-                duration = "00:" + duration;
-            } else if (String(duration).length === 2) {
-                duration = "00:00:" + duration;
-            }
-        } else {
-            artist = "n/a"
-        }
-
-        playing_now = new MessageEmbed()
-
-            .setColor('#c5e2ed')
-            .setTitle("Playing: ")
-            //.setDescription(`${guildQueue.songs[0].name || current_song.title}`)
-            .addFields(
-                { name: guildQueue.songs[0].name || guildQueue.songs[0].title, value: artist },
-                //{ name: 'Author', value: current_song.author || current_song.publisher_metadata.artist || "none", inline: true },
-                { name: "▬▬▬▬▬▬▬▬▬▬▬▬▬ [ 00:00:00/" + duration + "]", value: '\u200B' },
-            )
-            .setImage(`${guildQueue.songs[0].thumbnail || guildQueue.songs[0].artwork_url}`)
-            .setTimestamp()
-        return playing_now;
-    }
 
     const query = { guildID: message.guild.id };
     GD = await guildSchema.findOne(query);
     // this is a function to generate it everytime it is called
-    function action_r(guildData = GD) {
-
-        const r = new MessageActionRow()
-
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('1_back')
-                    .setEmoji('⏮')
-                    .setStyle('SECONDARY')
-                    .setDisabled(guildData.song_history[0] && guildQueue.getRepeatMode() === 0 ? false : true)
-
-            )
-
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('1_play-pause')
-                    .setEmoji(guildQueue.paused === false ? '⏸' : '▶')
-                    .setStyle(guildQueue.paused === true ? 'SUCCESS' : 'SECONDARY')
-
-
-            )
-
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('1_next')
-                    .setEmoji('⏭')
-                    .setStyle('SECONDARY')
-
-            )
-
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('1_loop')
-                    .setEmoji(`🔁`)
-                    .setStyle(guildQueue.getRepeatMode() === 1 ?
-                        'DANGER' : 'SECONDARY')
-
-            )
-
-        return r;
-    }
-
-    function action_r2() {
-        const r2 = new MessageActionRow()
-
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('1_loop-songs')
-                    .setEmoji('🔂')
-                    .setStyle(guildQueue.getRepeatMode() === 2 ?
-                        'DANGER' : 'SECONDARY')
-
-            )
-
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('1_stop')
-                    .setEmoji('⏹')
-                    .setStyle('SECONDARY')
-
-            )
-
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('1_shuffle')
-                    .setEmoji('🔀')
-                    .setStyle('SECONDARY')
-
-            )
-
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('1_lyrics')
-                    .setEmoji('🔠')
-                    .setStyle('SECONDARY')
-            )
-
-        return r2;
-    }
 
     const msg = await message.channel.send({
-        embeds: [playing_now_embed()],
-        components: [action_r(), action_r2()]
+        embeds: [playing_now_embed(current_song)],
+        components: [action_row_1(), action_row_2()]
     });
 
+    // Handles when song is changed
+    const songChanged = async function songChanged(queue, newSong, oldSong) {
+        console.log("SONG CHANGED!!!!");
+        guildData = await guildSchema.findOne({ guildID: queue.guild.id });
+        const query = { guildID: queue.guild.id };
+        if (!oldSong.url && oldSong.uri) { oldSong.url = oldSong.uri; }
+
+        // Basically ensures that the buttons and embed shows up when the song is actually loaded to prevent errors
+        song_playing_timeout(queue, client, message);
+
+        msg.delete().catch(error => {
+            // Only log the error if it is not an Unknown Message error
+            if (error.code !== 10008) {
+                console.error('Failed to delete the message:', error);
+            }
+        });
+
+
+        cmd_collector.stop();
+        remove_event_listeners();
+
+        if (queue.getRepeatMode() === 1) return;
+
+        const updateDocument = {
+            $push: { song_history: oldSong.url }
+        };
+
+        const result = await guildSchema.updateOne(query, updateDocument);
+    }
+
     const queueDestroyed = function queueDestroyed(queue) {
-        if (msg) {
-            msg.delete();
-        }
+
+        msg.delete().catch(error => {
+            // Only log the error if it is not an Unknown Message error
+            if (error.code !== 10008) {
+                console.error('Failed to delete the message:', error);
+            }
+        });
+
         cmd_collector.stop();
         remove_event_listeners();
     }
     const queueEnd = function queueEnd(queue) {
         message.channel.send("The queue has ended 😭");
-        if (msg) {
-            msg.delete();
-        }
-        cmd_collector.stop();
-        remove_event_listeners();
-    }
 
-
-
-
-
-    const songChanged = async function songChanged(queue, newSong, oldSong) {
-        console.log("SONG CHANGED!!!!");
-        guildData = await guildSchema.findOne({ guildID: queue.guild.id });
-        const query = { guildID: queue.guild.id };
-
-        if (oldSong.url || queue.getRepeatMode() != 1) { // youtube
-            //    song = song.url;
-            const updateDocument = {
-                $push: { song_history: oldSong.url }
-            };
-
-            const result = await guildSchema.updateOne(query, updateDocument);
-
-            //await guildSchema.updateOne({ query, $push: { song_history: oldSong.url } })
-        } else if (oldSong.uri || queue.getRepeatMode() != 1) { // soundcloud
-            const updateDocument = {
-                $push: { song_history: oldSong.uri }
-            };
-
-            const result = await guildSchema.updateOne(query, updateDocument);
-            //await guildSchema.updateOne({ query, $push: { song_history: oldSong.uri } })
-        }
-        // Basically ensures that the buttons and embed shows up when the song is actually loaded to prevent errors
-        song_playing_timeout(queue, client, message);
-        if (msg) {
-            msg.delete();
-        }
-
-        cmd_collector.stop();
-        remove_event_listeners();
-    }
-
-    const err = async function err(error, queue) {
-        console.log(`Error: ${error} in ${queue.guild.name} `);
-        console.log(error);
-        if (error === "Status code: 403") {
-            console.log("403 time?");
-            if (msg) {
-                msg.delete();
+        msg.delete().catch(error => {
+            // Only log the error if it is not an Unknown Message error
+            if (error.code !== 10008) {
+                console.error('Failed to delete the message:', error);
             }
-            cmd_collector.stop();
-            remove_event_listeners();
-        }
+        });
+
+        cmd_collector.stop();
+        remove_event_listeners();
     }
 
 
@@ -841,12 +802,8 @@ var song_now_playing = async function (client, message) {
     }
 
 
-    var lyrics_toggled = false;
     cmd_collector.on('collect', async i => {
         if (i === undefined) { return; }
-
-
-
 
         await i.deferUpdate();
 
@@ -856,23 +813,23 @@ var song_now_playing = async function (client, message) {
 
         let i_embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL());
         if (i.customId === '1_play-pause') {
-            //let embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL());
-            //await i.deferUpdate();
             if (guildQueue.paused === true) {
                 guildQueue.setPaused(false);
-                i_embed.setDescription("Resumed").setColor('#75fa1e').setTimestamp()
+                msg.edit({
+                    embeds: [playing_now_embed(current_song).setTitle("Playing:").setColor('#c5e2ed')],
+                    components: [action_row_1(), action_row_2()]
+                });
             } else if (guildQueue.paused === false) {
                 guildQueue.setPaused(true);
-                i_embed.setDescription("Paused").setColor('#fa251e').setTimestamp()
+                msg.edit({
+                    embeds: [playing_now_embed(current_song).setTitle("Paused").setColor('#fa251e')],
+                    components: [action_row_1(), action_row_2()]
+                });
             }
 
-            msg.edit({
-                embeds: [i_embed, playing_now_embed()],
-                components: [action_r(), action_r2()]
-            });
 
         } else if (i.customId === '1_next') {
-            i_embed.setDescription(`Skipped \`${guildQueue.songs[0].name || guildQueue.songs[0].title}\``).setTimestamp();
+            i_embed.setDescription(`Skipped \`${current_song.name || current_song.title}\``).setTimestamp();
             message.channel.send({ embeds: [i_embed] });
             if (guildQueue.songs.length > 1) {
                 if (guildQueue.paused === true) {
@@ -917,34 +874,18 @@ var song_now_playing = async function (client, message) {
                 };
 
                 await guildSchema.updateOne(query, updateDocument);
-                //let song = old_queue.pop();
-                // if (song.url) {
-                //    song = song.url;
-                //} else {
-                //    song = song.uri; // Soundcloud songs label url differently
-                //}
-
 
                 let song_2 = await guildQueue.play(song, {
                     index: 0,
                 }).catch(_ => {
-                    if (!guildQueue)
-                        queue.stop();
+                    guildQueue.stop();
                 });
                 const q = { guildID: message.guild.id };
                 GD = await guildSchema.findOne(q);
                 await msg.edit({
-                    embeds: [playing_now_embed()],
-                    components: [action_r(GD), action_r2()]
+                    embeds: [playing_now_embed(current_song)],
+                    components: [action_row_1(GD), action_row_2()]
                 });
-
-
-                //msg.delete();
-                //guildQueue.skip();
-                //console.log("Old queue", old_queue)
-                //old_queue.pop();
-                //console.log("Old queue", old_queue)
-                //console.log(old_queue.length)
             }
 
 
@@ -961,8 +902,8 @@ var song_now_playing = async function (client, message) {
 
             // edits msg to change color of the loop button
             msg.edit({
-                embeds: [playing_now_embed()],
-                components: [action_r(), action_r2()]
+                embeds: [playing_now_embed(current_song)],
+                components: [action_row_1(), action_row_2()]
             });
 
             message.channel.send({ embeds: [i_embed] })
@@ -977,8 +918,8 @@ var song_now_playing = async function (client, message) {
 
             // edits msg to change color of the queue loop button
             msg.edit({
-                embeds: [playing_now_embed()],
-                components: [action_r(), action_r2()]
+                embeds: [playing_now_embed(current_song)],
+                components: [action_row_1(), action_row_2()]
             });
 
             message.channel.send({
@@ -987,7 +928,12 @@ var song_now_playing = async function (client, message) {
         } else if (i.customId === '1_stop') {
             i_embed.setDescription(`Stopped the queue`).setTimestamp();
             if (msg) {
-                msg.delete();
+                msg.delete().catch(error => {
+                    // Only log the error if it is not an Unknown Message error
+                    if (error.code !== 10008) {
+                        console.error('Failed to delete the message:', error);
+                    }
+                });
             }
             message.channel.send({
                 embeds: [i_embed]
@@ -999,43 +945,9 @@ var song_now_playing = async function (client, message) {
             i_embed.setDescription(`The queue has been shuffled`).setTimestamp();
             message.channel.send({ embeds: [i_embed] });
             guildQueue.shuffle();
-        } else if (i.customId === '1_lyrics') {
-
-            if (lyrics_toggled === true) {
-                msg.edit({
-                    embeds: [playing_now_embed()],
-                    components: [action_r(), action_r2()]
-                });
-                lyrics_toggled = false;
-            } else {
-                let lyrics_embed = new MessageEmbed().setColor('RANDOM');
-
-                const searches = await genius_client.songs.search(guildQueue.songs[0].name);
-                const firstSong = searches[0];
-                if (firstSong) {
-                    const lyrics = await firstSong.lyrics();
-                    console.log(firstSong);
-                    lyrics_embed.setTitle(firstSong.title).setAuthor(`${firstSong.artist.name}`, `${firstSong.artist.thumbnail}`, `${firstSong.url}`).setThumbnail(`${firstSong.image}`);
-
-                    lyrics_embed.setDescription(lyrics.length >= 4093 ? lyrics.substring(0, 4093) + '...' : lyrics); // Adds the lyrics to the embed
-                } else {
-                    lyrics_embed.setTitle("Lyrics Not Found...");
-                }
-                msg.edit({
-                    embeds: [playing_now_embed(), lyrics_embed],
-                    components: [action_r(), action_r2()]
-                });
-                lyrics_toggled = true;
-            }
-            //i.editReply({ embeds: [lyrics_embed] })
         } else {
             cmd_collector.stop();
-            //return;
         }
     });
-
-
-
-
 }
 
