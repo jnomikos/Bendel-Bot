@@ -170,12 +170,16 @@ module.exports = {
                 let arguments = [videos[choice + len].url]
                 command.execute(client, message, arguments);
 
-                msgRef.delete().catch(error => {
-                    // Only log the error if it is not an Unknown Message error
-                    if (error.code !== 10008) {
-                        console.error('Failed to delete the message:', error);
-                    }
-                });;
+
+                function songAdded() {
+                    msgRef.delete().catch(error => {
+                        // Only log the error if it is not an Unknown Message error
+                        if (error.code !== 10008) {
+                            console.error('Failed to delete the message:', error);
+                        }
+                    });;
+                }
+                client.player.once('songAdd', songAdded);
 
             }
         });
