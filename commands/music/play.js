@@ -130,7 +130,75 @@ client.player.on('songLoaded', (message, queue) => {
 });
 
 
+function search_action_row_1(videos, len) {
+    const r1 = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_1')
+                .setLabel('1')
+                //.setEmoji('1️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len] === undefined)
+        )
 
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_2')
+                .setLabel('2')
+                // .setEmoji('2️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 1] === undefined)
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_3')
+                .setLabel('3')
+                // .setEmoji('3️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 2] === undefined)
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_4')
+                .setLabel('4')
+                // .setEmoji('4️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 3] === undefined)
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_5')
+                .setLabel('5')
+                // .setEmoji('5️⃣')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 4] === undefined)
+        )
+    return r1;
+}
+function search_action_row_2(videos, len) {
+    const r2 = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_back')
+                //.setLabel('<')
+                .setEmoji('⬅️')
+                .setStyle('PRIMARY')
+                .setDisabled(len === 0)
+        )
+
+        .addComponents(
+            new MessageButton()
+                .setCustomId('choice_forward')
+                //.setLabel('2')
+                .setEmoji('➡️')
+                .setStyle('PRIMARY')
+                .setDisabled(videos[len + 5] === undefined)
+        )
+    return r2;
+}
 
 
 async function song_playing_timeout(queue, client, message) {
@@ -157,6 +225,12 @@ async function song_playing_timeout(queue, client, message) {
 
 
 async function play_music(client, guildQueue, message, args) {
+
+    var isInteraction;
+    if (message.user) {
+        isInteraction = true;
+        args = args.get('search').value.split(" ");
+    }
 
     let queue;
     queue = client.player.createQueue(message.guild.id);
@@ -440,6 +514,7 @@ var song_now_playing = async function (client, message) {
     // this is a function to generate it everytime it is called
 
     const msg = await message.channel.send({
+        message: "",
         embeds: [playing_now_embed(current_song)],
         components: [action_row_1(), action_row_2()]
     });

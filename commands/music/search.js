@@ -151,25 +151,31 @@ module.exports = {
                     return;
                 }
 
-                let msg = i.editReply({ // loading reply
-                    content: "<a:Loading:931258756644360272> Hold on a second, adding the video...",
-                    embeds: [],
-                    components: []
-                });
-
                 if (videos[choice + len] === undefined) {
                     Promise.reject(new Error('fail')).then(console.error(error));
                     console.error("Song chosen was undefined");
                     return;
                 }
 
+                i.editReply({ // loading reply
+                    content: "<a:Loading:931258756644360272> Hold on a second, adding the video...",
+                    embeds: [],
+                    components: []
+                });
+
+                client.player.removeListener('newSearch', newSearch);
+                coll.stop();
 
                 let command = client.commands.get('play');
                 let arguments = [videos[choice + len].url]
                 command.execute(client, message, arguments);
 
-                client.player.removeListener('newSearch', newSearch);
-                coll.stop();
+                msgRef.delete().catch(error => {
+                    // Only log the error if it is not an Unknown Message error
+                    if (error.code !== 10008) {
+                        console.error('Failed to delete the message:', error);
+                    }
+                });;
 
             }
         });
