@@ -2,7 +2,7 @@
   "dependencies": {
     "@discordjs/rest": "^0.2.0-canary.0",
     "@discordjs/voice": "^0.7.2",
-    "discord-music-player": "github:jnomikos/discord-music-player",
+    "discord-music-player": "git@github.com:jnomikos/discord-music-player.git#working",
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
     "download": "^8.0.0",

@@ -22,7 +22,7 @@ module.exports = {
 
         let guildQueue = client.player.getQueue(message.guild.id);
         if (guildQueue) {
-            guildQueue.stop();
+            guildQueue.leave();
             message.reply({
                 content: "Left the voice channel! 😭",
                 ephemeral: true

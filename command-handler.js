@@ -1,43 +1,26 @@
-const fs = require('fs');
-const { client } = require('.');
-const DiscordJS = require('discord.js');
 const getFiles = require('./get-files');
 const getDirectories = require('./get-directories');
-const mongoose = require('mongoose');
 const guildSchema = require('./database/schema/guild');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const { MessageActionRow, MessageSelectMenu } = require('discord.js');
 let prevention = require('./spam-prevention')
 
 
 
-//client.aliases = new DiscordJS.Collection();
+
 module.exports = async (client) => {
     const aliases = {}
     const suffix = '.js'
 
     const commandFiles = getFiles('./commands', suffix);
-    //client.commands = new Collection();
+
     const directories = getDirectories('./commands', suffix);
 
     console.log(directories);
 
-    //const guildId = '904553034892333066';
     const clientId = '905938287850553354';
-    //const guild = client.guilds.cache.get(guildId)
 
-    //let commands;
-    //if (guild) {
-    //    console.log("Bot test initiated");
-    //    commands = guild.commands;
-    //} else {
     const commands = [];
-    //}
-
-    //client.commands?.get('play');
-    //client.commands?.get('join');
-    //client.commands?.get('leave');
 
     // Loop over the Command files
     for (const command of commandFiles) {
@@ -58,11 +41,9 @@ module.exports = async (client) => {
             commands.push(client.commands.get(commandName.toLowerCase()).data.toJSON());
         }
 
-        //command['directory'] = "none"
         if (client.commands.get(commandName.toLowerCase()).aliases) {
             client.commands.get(commandName.toLowerCase()).aliases.forEach(alias => {
                 aliases[alias] = commandFile.name;
-                //aliases[alias].name = alias;
             });
         }
 
@@ -104,13 +85,12 @@ module.exports = async (client) => {
             command.execute(client, interaction, options);
 
         } catch (error) {
-            //     console.log(error);
+            console.log(error);
         }
 
     });
 
     console.log(client.commands);
-    //console.log(Object.keys(commands));
     client.on('messageCreate', async (message) => {
 
 
