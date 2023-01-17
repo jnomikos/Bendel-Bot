@@ -5,6 +5,6 @@ module.exports = {
     premium: false,
     async execute(client, message, args) {
         let sayMessage = args.content.split(' ').slice(1).join(' ');
-        message.channel.send(args);
+        message.channel.send(sayMessage);
     }
 }
