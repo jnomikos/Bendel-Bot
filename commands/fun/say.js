@@ -4,7 +4,7 @@ module.exports = {
     directory: __dirname,
     premium: false,
     async execute(client, message, args) {
-        let sayMessage = args.content.split(' ').slice(1).join(' ');
+        let sayMessage = message.content.split(' ').slice(1).join(' ');
         message.channel.send(sayMessage);
     }
 }
