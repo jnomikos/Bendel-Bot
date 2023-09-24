@@ -49,10 +49,13 @@ module.exports = {
             return message.channel.send("Yeah uhh.. no songs were found. Sorry!");
         }
 
-        const r = await ytsr(filter1.url, { limit: 10 })
+        const options = {
+            pages: 2,
+        };
 
 
-        const videos = r.items;
+        const searchResults = await ytsr(filter1.url, options);
+        const videos = searchResults.items.filter(i => i.type === 'video');
         let userId;
         if (isInteraction === true) {
             userId = message.user.id;
@@ -188,6 +191,7 @@ module.exports = {
 }
 
 function search_screen_embed(len, videos, args) {
+    console.log(videos);
     search_screen = new MessageEmbed()
         .setColor('#c5e2ed')
         .setTitle(`Showing results for: ${args.join(" ")}`)

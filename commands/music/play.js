@@ -332,37 +332,10 @@ async function play_music(client, guildQueue, message, args) {
     }
 }
 
-function duration_converter(time) { // converts decimal to hh:mm:ss
-    var hour = time / 3600000;
-    var hour_remainder = Math.abs(hour) - Math.floor(hour);
-    hour = Math.trunc(hour);
-
-    var minute = hour_remainder * 60;
-    var minute_remainder = Math.abs(minute) - Math.floor(minute);
-    minute = Math.trunc(minute);
-
-    var second = minute_remainder * 60;
-    second = Math.trunc(second);
-
-
-    if (String(second).length < 2) {
-        second = '0' + second;
-    }
-
-    if (String(minute).length < 2) {
-        minute = '0' + minute;
-    }
-
-    if (String(hour).length < 2) {
-        hour = '0' + hour;
-    }
-
-    return (hour + ":" + minute + ":" + second);
-}
-
 function playing_now_embed(current_song) {
     let artist;
     var duration = '\u200B';
+    console.log(current_song)
     if (current_song.title) {
         duration = duration_converter(current_song.duration);
         if (!current_song.publisher_metadata) {
@@ -603,8 +576,6 @@ var song_now_playing = async function (client, message) {
 
 
         let i_embed = new MessageEmbed().setFooter(`${i.user.tag}`, i.user.displayAvatarURL());
-
-
 
 
 
